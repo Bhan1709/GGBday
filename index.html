@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Happy Birthday, My Fairytale Princess 🌸✨</title>
+  <meta name="description" content="A romantic, 3D interactive fairytale birthday celebration website with a love letter, photo memories, interactive cake, Three.js 3D butterflies, and 12 birthday gift card transfer claims." />
+  
+  <!-- Google Fonts — Romantic Typography Stack -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Parisienne&family=Jost:wght@300;400;500;600&family=Dancing+Script:wght@600;700&display=swap" rel="stylesheet" />
+
+  <!-- CSS Stylesheets -->
+  <link rel="stylesheet" href="src/styles/main.css" />
+  <link rel="stylesheet" href="src/styles/hero.css" />
+  <link rel="stylesheet" href="src/styles/cake.css" />
+  <link rel="stylesheet" href="src/styles/letter.css" />
+  <link rel="stylesheet" href="src/styles/collage.css" />
+  <link rel="stylesheet" href="src/styles/giftcard.css" />
+  <link rel="stylesheet" href="src/styles/music.css" />
+
+  <!-- Three.js 3D Engine & Canvas Confetti CDN Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+  <!-- Fullscreen Fixed Fairytale Background Image with Blur & Color Overlay -->
+  <div class="page-bg-fixed">
+    <img src="hero_bg.jpg" alt="Fairytale Tuscan Sunset Garden" class="page-bg-img" />
+    <div class="page-bg-overlay"></div>
+  </div>
+
+  <!-- Three.js 3D Interactive WebGL Particle & Butterfly Canvas -->
+  <canvas id="three-canvas"></canvas>
+
+  <!-- Fallback 2D Fireflies Canvas -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- Magical Entrance Curtain Modal (Starts Music Instantly on User Entrance) -->
+  <div class="entrance-modal" id="entrance-modal">
+    <div class="entrance-card glass-panel">
+      <div class="entrance-badge">🌸 Enchanted Fairytale Garden ✨</div>
+      <h1 class="entrance-title">Happy Birthday, Mia Bella! 💖</h1>
+      <p class="entrance-subtitle">
+        Step into your magical fairytale garden of golden roses, fluttering butterflies, Italian romance, and 12 birthday gift card transfer claims...
+      </p>
+      <button class="btn-primary btn-gold entrance-btn" id="enter-realm-btn">
+        Enter Garden & Play Music 🎶✨
+      </button>
+    </div>
+  </div>
+
+  <div id="app">
+    
+    <!-- 1. Hero Section -->
+    <header class="hero-section" id="hero">
+      <div class="hero-badge">
+        🌸 A Magical Fairytale Garden for You ✨
+      </div>
+      
+      <h1 class="hero-title-greeting" id="hero-greeting">Happy Birthday,</h1>
+      <h2 class="hero-title-main" id="hero-name">My Fairytale Princess 💖</h2>
+      
+      <p class="hero-subtitle">
+        A peaceful & magical garden created with all my heart to celebrate you today, tomorrow, and forever. Move your mouse or touch the screen to guide the 3D fairy dust!
+      </p>
+
+      <div class="hero-cta-wrap">
+        <a href="#cake-section" class="btn-primary">
+          Blow Out Your Birthday Candles 🎂
+        </a>
+      </div>
+
+      <nav class="quick-nav">
+        <a href="#cake-section" class="quick-nav-item">🎂 Fairy Cake</a>
+        <a href="#letter-section" class="quick-nav-item">✉️ Love Letter</a>
+        <a href="#gallery-section" class="quick-nav-item">📸 Photo Collage</a>
+        <a href="#giftcard-section" class="quick-nav-item">💳 12 Gift Cards</a>
+      </nav>
+    </header>
+
+    <!-- 2. Interactive Birthday Cake Section -->
+    <section class="cake-section" id="cake-section">
+      <div class="section-title-wrap">
+        <span class="section-subtitle">Make A Magical Wish 🌸</span>
+        <h2 class="section-title">Enchanted Birthday Cake</h2>
+        <div class="section-divider"></div>
+      </div>
+
+      <div class="cake-container glass-panel">
+        <!-- Three.js 3D Cake Canvas -->
+        <div id="cake-three-container"></div>
+
+        <p class="cake-hint">🕯️ Click a candle to blow it out — or press the button!</p>
+
+        <div class="cake-controls">
+          <button id="blow-candles-btn" class="btn-primary btn-gold">
+            Blow Out All Candles 💨🎂
+          </button>
+        </div>
+
+        <div id="wish-reveal-box" class="wish-reveal-box">
+          <div class="wish-title">Fairy Wish Granted! 💖✨</div>
+          <p class="wish-body">
+            Sei la mia vita e il mio cuore! May all your magical dreams come true this year.
+            You deserve endless happiness and all the golden roses in the world. 🌸🌻
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Wax-Sealed Romantic Love Letter -->
+    <section class="letter-section" id="letter-section">
+      <div class="section-title-wrap">
+        <span class="section-subtitle">Dal Mio Cuore (From My Heart) 🌹</span>
+        <h2 class="section-title">A Love Letter For You</h2>
+        <div class="section-divider"></div>
+      </div>
+
+      <div class="envelope-wrapper">
+        <div class="envelope-container" id="envelope-container">
+          
+          <!-- Sealed Envelope Cover -->
+          <div class="wax-seal" id="wax-seal" title="Click to unseal letter">
+            <span class="wax-seal-icon">🌹</span>
+          </div>
+
+          <div class="envelope-teaser">
+            <h3 style="font-family: var(--font-serif); font-size: 1.8rem; color: var(--text-gold);">
+              To My Dearest Fiancée & Fairytale Princess
+            </h3>
+            <p class="envelope-hint">Click the wax seal to open your letter...</p>
+            <button id="open-letter-btn" class="btn-primary" style="margin-top: 1.5rem;">
+              Unseal Envelope ✉️
+            </button>
+          </div>
+
+          <!-- Unfolded Letter Paper -->
+          <article class="letter-paper" id="letter-paper">
+            <header class="letter-header">
+              <h2 class="letter-title" id="letter-salutation">Mia Bella Principessa,</h2>
+              <span class="letter-date" id="letter-date">August 13th</span>
+            </header>
+
+            <div class="letter-body" id="letter-body-content">
+              <!-- Paragraphs loaded dynamically from config -->
+            </div>
+
+            <footer class="letter-footer">
+              <div class="letter-closing" id="letter-closing">Con tutto il mio amore,</div>
+              <div class="letter-signature" id="letter-signature">Your Fiancé ❤️🌹</div>
+            </footer>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Random Three.js Photo Collage -->
+    <section class="gallery-section" id="gallery-section">
+      <div class="section-title-wrap">
+        <span class="section-subtitle">Scattered Like Confetti 🎀</span>
+        <h2 class="section-title">A Random Photo Collage</h2>
+        <div class="section-divider"></div>
+      </div>
+
+      <div class="collage-wrap glass-panel">
+        <!-- Three.js Photo Collage Canvas -->
+        <div id="photo-collage-container"></div>
+
+        <p class="collage-hint">🖱️ Hover a photo, click to bring it closer — or hit Shuffle to scatter them all over again!</p>
+
+        <div class="collage-controls">
+          <button id="shuffle-photos-btn" class="btn-primary btn-gold">
+            Shuffle Collage ✨
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. 12 Birthday Gift Cards Transfer System -->
+    <section class="giftcard-section" id="giftcard-section">
+      <div class="section-title-wrap">
+        <span class="section-subtitle">Your Birthday Allowance 🎁</span>
+        <h2 class="section-title">12 Birthday Gift Card Transfers</h2>
+        <p style="color: var(--text-muted); margin-top: 0.5rem;">
+          Valid for 12 money transfer requests until August 13th, 2027. Treat yourself whenever your heart desires!
+        </p>
+        <div class="section-divider"></div>
+      </div>
+
+      <!-- Counter Card -->
+      <div class="claims-counter-card">
+        <div>
+          <div class="claims-counter-title">Remaining Transfer Claims</div>
+          <div class="claims-counter-subtitle">Use them anytime throughout the year for shopping, spa, or Italian treats!</div>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 0.4rem;">
+          <span class="claims-badge-num" id="remaining-claims-count">12</span>
+          <span style="color: var(--text-muted); font-size: 1.2rem;">/ 12 Left</span>
+        </div>
+      </div>
+
+      <!-- Grid of 12 Vouchers -->
+      <div class="coupons-grid" id="coupons-grid">
+        <!-- Rendered dynamically by giftcard.js -->
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Claim Modal Form -->
+  <div class="claim-modal" id="claim-modal">
+    <div class="claim-modal-box">
+      <button class="lightbox-close" id="claim-modal-close">✕</button>
+      <h3 id="active-coupon-title" class="section-title" style="font-size: 1.8rem; text-align: center;">
+        Redeem Gift Card
+      </h3>
+      <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; margin-top: 0.3rem;">
+        Enter what you'd like to buy and the requested amount!
+      </p>
+
+      <form id="claim-form" class="claim-form">
+        <div class="form-group">
+          <label for="claim-item-name">What would you like to buy? 🎁</label>
+          <input type="text" id="claim-item-name" class="form-control" placeholder="e.g., Spa day, New dress, Italian dinner..." required />
+        </div>
+
+        <div class="form-group">
+          <label for="claim-amount">Requested Amount ($ / € / £) 💵</label>
+          <input type="number" id="claim-amount" class="form-control" placeholder="e.g., 100" min="1" step="any" required />
+        </div>
+
+        <div class="form-group">
+          <label for="claim-note">Personal Note (Optional) 💬</label>
+          <textarea id="claim-note" class="form-control" placeholder="Add a sweet message for him..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary btn-gold" style="width: 100%; margin-top: 0.5rem;">
+          Submit Transfer Claim 💖
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Floating Audio Bar -->
+  <div class="music-player-bar" id="music-player-bar">
+    <div class="music-disc">🎵</div>
+    <div class="music-info">
+      <span class="music-track-name">Surili Akhiyon Wale 🌸</span>
+      <span class="music-status-text" id="music-status-text">Playing</span>
+    </div>
+    <div class="equalizer-bars">
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+      <div class="eq-bar"></div>
+    </div>
+    <button class="music-play-btn" id="music-play-btn" aria-label="Play Music">
+      <span id="music-play-icon">⏸</span>
+    </button>
+  </div>
+
+  <!-- App Main Orchestrator JavaScript -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

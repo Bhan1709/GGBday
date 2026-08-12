@@ -1,0 +1,80 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Random Photo Collage — Three.js 3D Canvas Section
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.gallery-section {
+  padding: 4rem 1rem;
+  margin-bottom: 4rem;
+}
+
+/* Main glass panel wrapper */
+.collage-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 2rem 3rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top shimmer line */
+.collage-wrap::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-500), var(--rose-400), transparent);
+  opacity: 0.65;
+}
+
+/* ── Three.js Canvas Container ─────────────────────────────────────────── */
+#photo-collage-container {
+  width: 100%;
+  max-width: 1100px;
+  height: 560px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin: 0 auto 0.5rem;
+  position: relative;
+  background: transparent;
+}
+
+#photo-collage-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: var(--radius-md);
+}
+
+/* Hint text below canvas */
+.collage-hint {
+  font-family: var(--font-cursive);
+  font-size: 1.6rem;
+  color: var(--rose-400);
+  margin-bottom: 1.2rem;
+  opacity: 0.85;
+  animation: hint-glow 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes hint-glow {
+  0%   { opacity: 0.6; text-shadow: none; }
+  100% { opacity: 1;   text-shadow: 0 0 18px rgba(244, 151, 170, 0.5); }
+}
+
+/* ── Collage Controls ──────────────────────────────────────────────────── */
+.collage-controls {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  #photo-collage-container {
+    height: 420px;
+  }
+}

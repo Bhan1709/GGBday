@@ -1,0 +1,111 @@
+/* Floating Music Player Styles */
+.music-player-bar {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.4rem;
+  background: rgba(26, 17, 34, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-full);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), var(--shadow-gold);
+  transition: transform var(--transition-fast);
+}
+
+.music-player-bar:hover {
+  transform: translateY(-3px);
+}
+
+.music-disc {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #2b1b24 30%, #ff5e8e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px rgba(255, 94, 142, 0.4);
+  animation: spin-disc 6s linear infinite;
+  animation-play-state: paused;
+}
+
+.music-player-bar.playing .music-disc {
+  animation-play-state: running;
+}
+
+@keyframes spin-disc {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.music-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.music-track-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-gold);
+  line-height: 1.2;
+}
+
+.music-status-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Audio Equalizer Wave Bar */
+.equalizer-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 16px;
+}
+
+.eq-bar {
+  width: 3px;
+  height: 100%;
+  background: var(--primary-pink);
+  border-radius: 2px;
+  transform-origin: bottom;
+  animation: eq-pulse 1s ease-in-out infinite alternate;
+  animation-play-state: paused;
+}
+
+.music-player-bar.playing .eq-bar {
+  animation-play-state: running;
+}
+
+.eq-bar:nth-child(1) { animation-delay: 0.1s; height: 60%; }
+.eq-bar:nth-child(2) { animation-delay: 0.4s; height: 100%; }
+.eq-bar:nth-child(3) { animation-delay: 0.2s; height: 40%; }
+.eq-bar:nth-child(4) { animation-delay: 0.5s; height: 80%; }
+
+@keyframes eq-pulse {
+  0% { transform: scaleY(0.2); }
+  100% { transform: scaleY(1); }
+}
+
+.music-play-btn {
+  background: linear-gradient(135deg, var(--primary-pink), var(--primary-rose));
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(255, 94, 142, 0.4);
+  transition: transform var(--transition-fast);
+}
+
+.music-play-btn:hover {
+  transform: scale(1.1);
+}

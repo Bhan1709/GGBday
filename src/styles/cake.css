@@ -1,0 +1,117 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Birthday Cake Section — Three.js 3D Canvas
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.cake-section {
+  padding: 5rem 1rem 4rem;
+  margin-bottom: 3rem;
+}
+
+/* Main glass panel wrapper */
+.cake-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 2rem 3rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Top shimmer line */
+.cake-container::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-500), var(--rose-400), transparent);
+  opacity: 0.65;
+}
+
+/* ── Three.js Canvas Container ─────────────────────────────────────────── */
+#cake-three-container {
+  width: 100%;
+  max-width: 560px;
+  height: 460px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin: 0 auto 0.5rem;
+  position: relative;
+  background: transparent;
+}
+
+#cake-three-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: var(--radius-md);
+}
+
+/* Hint text below canvas */
+.cake-hint {
+  font-family: var(--font-cursive);
+  font-size: 1.6rem;
+  color: var(--rose-400);
+  margin-bottom: 1.2rem;
+  opacity: 0.85;
+  animation: hint-glow 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes hint-glow {
+  0%   { opacity: 0.6; text-shadow: none; }
+  100% { opacity: 1;   text-shadow: 0 0 18px rgba(244, 151, 170, 0.5); }
+}
+
+/* ── Cake Controls ─────────────────────────────────────────────────────── */
+.cake-controls {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+/* ── Wish Reveal ───────────────────────────────────────────────────────── */
+.wish-reveal-box {
+  margin-top: 2rem;
+  padding: 2rem 2.5rem;
+  background: rgba(255, 196, 77, 0.09);
+  border: 1px solid rgba(255, 196, 77, 0.4);
+  border-radius: var(--radius-md);
+  max-width: 560px;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(24px) scale(0.97);
+  transition: all 0.7s var(--ease-spring);
+  pointer-events: none;
+}
+
+.wish-reveal-box.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.wish-title {
+  font-family: var(--font-cursive);
+  font-size: 2.5rem;
+  color: var(--gold-500);
+  margin-bottom: 0.6rem;
+  text-shadow: 0 0 20px rgba(255, 196, 77, 0.4);
+}
+
+.wish-body {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.15rem;
+  color: var(--text-body);
+  line-height: 1.75;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  #cake-three-container {
+    height: 340px;
+  }
+}

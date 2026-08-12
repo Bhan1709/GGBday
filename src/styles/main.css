@@ -1,0 +1,338 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Romantic Magical Garden Design System
+   Fonts: Cormorant Garamond (romance serif) · Parisienne (dreamy cursive)
+          · Jost (modern clean sans) — all via Google Fonts
+   Color Theory: Analogous warm palette (gold ↔ rose ↔ blush) + deep violet
+   backdrop for luminosity contrast. Accent emerald for fairy sparkle.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Parisienne&family=Jost:wght@300;400;500;600&family=Dancing+Script:wght@600;700&display=swap');
+
+/* ─── DESIGN TOKENS ──────────────────────────────────────────────────────── */
+:root {
+  /* Deep Violet-Plum Night Sky  —  backdrop creates luminosity pop for warm
+     foreground elements (analogous warm palette reads vivid against cool dark) */
+  --bg-dark:       #0d0918;
+  --bg-mid:        #160e26;
+  --bg-card:       rgba(22, 12, 36, 0.78);
+  --bg-glass:      rgba(255, 255, 255, 0.055);
+  --border-glass:  rgba(255, 215, 180, 0.16);
+  --border-gold:   rgba(255, 196, 77, 0.42);
+  --border-rose:   rgba(244, 151, 170, 0.35);
+
+  /* Warm Analogous Palette — Gold · Amber · Rose · Blush · Ivory */
+  --gold-100: #fff6d6;
+  --gold-300: #ffe79a;
+  --gold-500: #ffc44d;
+  --gold-700: #f5a623;
+  --rose-200: #ffd6e8;
+  --rose-400: #f497aa;
+  --rose-600: #e2738c;
+  --rose-800: #c05070;
+  --blush:    #fce8ee;
+  --ivory:    #fef9f2;
+
+  /* Semantic aliases */
+  --primary-pink:      var(--rose-400);
+  --primary-rose:      var(--rose-600);
+  --accent-gold:       var(--gold-500);
+  --accent-sunflower:  #ffd700;
+  --accent-terracotta: #e07a5f;
+  --accent-emerald:    #66bb6a;
+  --accent-glow:       var(--gold-500);
+
+  --text-main:    #fdf4f8;
+  --text-body:    #e8d5e0;
+  --text-muted:   #c9a8bb;
+  --text-gold:    var(--gold-300);
+
+  /* Typography — curated romantic stack */
+  --font-serif:   'Cormorant Garamond', 'Georgia', serif;
+  --font-cursive: 'Parisienne', 'Great Vibes', cursive;
+  --font-script:  'Dancing Script', cursive;
+  --font-sans:    'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Shadows */
+  --shadow-glow: 0 12px 40px rgba(244, 151, 170, 0.32);
+  --shadow-gold: 0 12px 40px rgba(255, 196, 77, 0.38);
+  --shadow-card: 0 28px 64px rgba(0, 0, 0, 0.68);
+
+  /* Geometry */
+  --radius-sm:   14px;
+  --radius-md:   22px;
+  --radius-lg:   32px;
+  --radius-full: 9999px;
+
+  /* Motion */
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast:   0.25s var(--ease-smooth);
+  --transition-smooth: 0.45s var(--ease-spring);
+}
+
+/* ─── RESET ──────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  line-height: 1.65;
+  overflow-x: hidden;
+  min-height: 100vh;
+  position: relative;
+  letter-spacing: 0.01em;
+}
+
+/* ─── BACKGROUND ─────────────────────────────────────────────────────────── */
+.page-bg-fixed {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.page-bg-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.65) contrast(1.08) saturate(1.15) blur(2.5px);
+  transform: scale(1.06);
+  transition: transform 1s ease-out;
+}
+
+.page-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 55% at 18% 28%, rgba(255, 196, 77, 0.20) 0%, transparent 70%),
+    radial-gradient(ellipse 55% 50% at 82% 72%, rgba(244, 151, 170, 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 35% at 50% 10%, rgba(200, 120, 255, 0.10) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(13, 9, 24, 0.40) 0%, rgba(13, 9, 24, 0.78) 100%);
+}
+
+/* ─── THREE.JS CANVAS ────────────────────────────────────────────────────── */
+#three-canvas,
+#particle-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ─── APP CONTAINER ──────────────────────────────────────────────────────── */
+#app {
+  position: relative;
+  z-index: 2;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 0 1.75rem 7rem;
+}
+
+/* ─── GLASSMORPHISM PANELS ───────────────────────────────────────────────── */
+.glass-panel {
+  background: var(--bg-card);
+  backdrop-filter: blur(22px) saturate(1.4);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.045);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 220, 180, 0.11);
+  border-radius: var(--radius-sm);
+  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.glass-card:hover {
+  border-color: var(--border-gold);
+  box-shadow: var(--shadow-gold);
+  transform: translateY(-3px);
+}
+
+/* ─── ENTRANCE MODAL ─────────────────────────────────────────────────────── */
+.entrance-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 6, 18, 0.94);
+  backdrop-filter: blur(28px) saturate(1.2);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  transition: opacity 0.7s var(--ease-spring);
+}
+
+.entrance-card {
+  max-width: 580px;
+  width: 100%;
+  text-align: center;
+  padding: 3.8rem 2.5rem;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(145deg, rgba(35, 18, 52, 0.95) 0%, rgba(16, 9, 26, 0.98) 100%);
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.9), var(--shadow-gold);
+  border: 1px solid var(--border-gold);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle shimmer strip on top of entrance card */
+.entrance-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-500), var(--rose-400), var(--gold-500), transparent);
+  opacity: 0.8;
+}
+
+.entrance-badge {
+  display: inline-block;
+  padding: 0.42rem 1.5rem;
+  background: rgba(255, 196, 77, 0.12);
+  border: 1px solid rgba(255, 196, 77, 0.38);
+  border-radius: var(--radius-full);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-300);
+  margin-bottom: 1.5rem;
+}
+
+.entrance-title {
+  font-family: var(--font-cursive);
+  font-size: clamp(2.8rem, 7vw, 4.2rem);
+  color: var(--gold-500);
+  line-height: 1.05;
+  margin-bottom: 1rem;
+  text-shadow: 0 0 30px rgba(255, 196, 77, 0.5), 0 0 60px rgba(255, 196, 77, 0.2);
+}
+
+.entrance-subtitle {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin-bottom: 2.4rem;
+  line-height: 1.7;
+}
+
+.entrance-btn {
+  font-size: 1.05rem;
+  padding: 1.05rem 2.8rem;
+  background: linear-gradient(135deg, var(--gold-500) 0%, var(--gold-700) 100%);
+  color: #1a0824;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* ─── SECTION HEADINGS ───────────────────────────────────────────────────── */
+.section-title-wrap {
+  text-align: center;
+  margin-bottom: 3.8rem;
+}
+
+.section-subtitle {
+  font-family: var(--font-cursive);
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  color: var(--gold-500);
+  display: block;
+  margin-bottom: 0.1rem;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 20px rgba(255, 196, 77, 0.35);
+}
+
+.section-title {
+  font-family: var(--font-serif);
+  font-size: clamp(2rem, 4.5vw, 3.4rem);
+  font-weight: 700;
+  font-style: italic;
+  background: linear-gradient(135deg, var(--ivory) 0%, var(--gold-300) 45%, var(--rose-400) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.1;
+}
+
+.section-divider {
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-500), var(--rose-400), transparent);
+  margin: 1.1rem auto 0;
+  border-radius: var(--radius-full);
+  opacity: 0.8;
+}
+
+/* Section spacing */
+section {
+  padding-top: 5rem;
+  padding-bottom: 2rem;
+}
+
+/* ─── BUTTONS ────────────────────────────────────────────────────────────── */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.95rem 2.4rem;
+  font-family: var(--font-sans);
+  font-size: 0.97rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #fff;
+  background: linear-gradient(135deg, var(--rose-400) 0%, var(--rose-600) 100%);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  box-shadow: var(--shadow-glow);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Shimmer on hover */
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.18) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.5s var(--ease-spring);
+}
+
+.btn-primary:hover::after { transform: translateX(100%); }
+
+.btn-primary:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 16px 42px rgba(244, 151, 170, 0.55);
+  filter: brightness(1.08);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold-500) 0%, var(--gold-700) 100%);
+  color: #1a0824;
+  box-shadow: var(--shadow-gold);
+}
+
+.btn-gold:hover {
+  box-shadow: 0 16px 42px rgba(255, 196, 77, 0.55);
+}

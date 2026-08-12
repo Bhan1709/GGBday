@@ -1,0 +1,326 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Love Letter — Romantic Expanded Paper
+   Typography: Cormorant Garamond italic body · Parisienne for salutation/sig
+   Layout: max-width 860px, generous padding, parchment texture gradient
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.letter-section {
+  padding: 5rem 1rem 4rem;
+  margin-bottom: 3rem;
+}
+
+/* Outer wrapper — full immersive width */
+.envelope-wrapper {
+  max-width: 1300px;
+  margin: 0 auto;
+  perspective: 1400px;
+}
+
+/* ─── Sealed state (envelope card) ──────────────────────────────────────── */
+.envelope-container {
+  position: relative;
+  width: 100%;
+  min-height: 400px;
+  background: linear-gradient(145deg, rgba(38, 20, 52, 0.82) 0%, rgba(18, 10, 28, 0.90) 100%);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card), var(--shadow-gold);
+  overflow: hidden;
+  transition: box-shadow 0.5s ease;
+}
+
+/* Top shimmer strip */
+.envelope-container::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-500), var(--rose-400), transparent);
+  opacity: 0.7;
+}
+
+/* ─── Wax Seal ───────────────────────────────────────────────────────────── */
+.wax-seal {
+  position: absolute;
+  top: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle at 32% 28%, #ec4899, #881337);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.6),
+    0 0 0 3px rgba(255, 196, 77, 0.35),
+    inset 0 2px 6px rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+  z-index: 10;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  animation: seal-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes seal-pulse {
+  0%, 100% { box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 0 3px rgba(255,196,77,0.3), inset 0 2px 6px rgba(255,255,255,0.35); }
+  50%       { box-shadow: 0 8px 24px rgba(0,0,0,0.6), 0 0 0 6px rgba(236,72,153,0.45), inset 0 2px 6px rgba(255,255,255,0.35); }
+}
+
+.wax-seal:hover {
+  transform: translateX(-50%) scale(1.12) rotate(-4deg);
+  box-shadow: 0 16px 40px rgba(236, 72, 153, 0.65), 0 0 0 5px rgba(255,196,77,0.4), inset 0 2px 6px rgba(255,255,255,0.35);
+  animation: none;
+}
+
+.wax-seal-icon {
+  font-size: 2rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+}
+
+/* ─── Envelope Teaser ────────────────────────────────────────────────────── */
+.envelope-teaser {
+  text-align: center;
+  padding: 148px 2.5rem 3.5rem;
+}
+
+.envelope-teaser h3 {
+  font-family: var(--font-serif) !important;
+  font-style: italic;
+  font-size: 1.85rem !important;
+  color: var(--gold-300) !important;
+  margin-bottom: 0.5rem;
+}
+
+.envelope-hint {
+  font-family: var(--font-cursive);
+  font-size: 1.8rem;
+  color: var(--rose-400);
+  margin-top: 0.8rem;
+  opacity: 0.9;
+}
+
+/* ─── Open state ─────────────────────────────────────────────────────────── */
+.envelope-container.open {
+  min-height: unset;
+  overflow: visible;
+  border-color: rgba(255, 196, 77, 0.28);
+  background: transparent;
+  box-shadow: none;
+}
+
+.envelope-container.open::before { display: none; }
+
+.envelope-container.open .envelope-teaser,
+.envelope-container.open .wax-seal {
+  display: none;
+}
+
+/* ─── Letter Paper ───────────────────────────────────────────────────────── */
+.letter-paper {
+  /* Parchment: warm ivory → antique cream */
+  background: linear-gradient(170deg,
+    #fffdf8 0%,
+    #fdf6e8 30%,
+    #faf0d8 65%,
+    #f5e9cc 100%);
+  color: #2b1b24;
+  padding: 4.5rem 5.5rem 4rem;
+  border-radius: var(--radius-md);
+  box-shadow:
+    0 40px 80px rgba(0, 0, 0, 0.55),
+    0 8px 24px rgba(0, 0, 0, 0.25),
+    inset 0 0 60px rgba(205, 160, 90, 0.08);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  position: relative;
+  display: none;
+  opacity: 0;
+  transform: translateY(40px) scale(0.97);
+  transition: opacity 0.9s var(--ease-spring), transform 0.9s var(--ease-spring);
+  overflow: hidden;
+
+  /* Subtle left-margin rule like real paper */
+  border-left: 4px solid rgba(212, 170, 100, 0.35);
+}
+
+/* Faint lined texture overlay */
+.letter-paper::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    transparent,
+    transparent 31px,
+    rgba(180, 140, 80, 0.08) 31px,
+    rgba(180, 140, 80, 0.08) 32px
+  );
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* Decorative corner rose */
+.letter-paper::after {
+  content: '🌸';
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  font-size: 1.6rem;
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.envelope-container.open .letter-paper {
+  display: block;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ─── Letter Header ──────────────────────────────────────────────────────── */
+.letter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  border-bottom: 1.5px solid rgba(180, 130, 60, 0.3);
+  padding-bottom: 1.2rem;
+  margin-bottom: 2.4rem;
+  position: relative;
+  z-index: 1;
+}
+
+.letter-date {
+  font-family: 'Jost', sans-serif;
+  font-size: 0.92rem;
+  font-weight: 400;
+  color: #9e7a5e;
+  font-style: italic;
+  letter-spacing: 0.03em;
+}
+
+/* Salutation — Parisienne cursive, deep rose */
+.letter-title {
+  font-family: 'Parisienne', cursive;
+  font-size: clamp(2.4rem, 4.5vw, 3.5rem);
+  color: #a0274f;
+  line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(160, 39, 79, 0.15);
+}
+
+/* ─── Letter Body ────────────────────────────────────────────────────────── */
+.letter-body {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: clamp(1.4rem, 2.8vw, 1.7rem);
+  font-style: italic;
+  line-height: 2.2;
+  color: #2e1c28;
+  margin-bottom: 2rem;
+  position: relative;
+  z-index: 1;
+}
+
+.letter-body p {
+  margin-bottom: 1.8rem;
+  text-indent: 2rem;
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* First paragraph — centred opener */
+.letter-body p:first-child {
+  text-indent: 0;
+  font-size: clamp(1.5rem, 3vw, 1.85rem);
+  font-weight: 600;
+  color: #7a1e40;
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+/* Fade-in stagger applied by JS */
+.letter-body p {
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+/* ─── Letter Footer ──────────────────────────────────────────────────────── */
+.letter-footer {
+  text-align: right;
+  margin-top: 2.5rem;
+  padding-top: 1.4rem;
+  border-top: 1.5px solid rgba(180, 130, 60, 0.22);
+  position: relative;
+  z-index: 1;
+}
+
+.letter-closing {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.25rem;
+  font-style: italic;
+  color: #7a5060;
+  margin-bottom: 0.6rem;
+  line-height: 1.7;
+}
+
+.letter-signature {
+  font-family: 'Parisienne', cursive;
+  font-size: clamp(2.6rem, 4.5vw, 3.5rem);
+  color: #a0274f;
+  line-height: 1.25;
+  white-space: pre-line; /* respect \n in signature */
+  text-shadow: 0 2px 8px rgba(160, 39, 79, 0.2);
+}
+
+/* ─── Audio Prompt Button ────────────────────────────────────────────────── */
+.letter-music-btn {
+  margin-top: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  padding: 0.5rem 1.1rem;
+  background: rgba(160, 39, 79, 0.08);
+  border: 1px solid rgba(160, 39, 79, 0.28);
+  border-radius: var(--radius-full);
+  color: #a0274f;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.letter-music-btn:hover {
+  background: #a0274f;
+  color: #fff;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .letter-paper {
+    padding: 2.5rem 0.8rem 2.5rem;
+  }
+
+  .letter-body {
+    font-size: 1.4rem;
+    line-height: 2.3;
+  }
+
+  .letter-body p {
+    text-indent: 0.5rem;
+    text-align: left;
+  }
+
+  .letter-body p:first-child {
+    font-size: 1.55rem;
+  }
+
+  .letter-title {
+    font-size: 2.6rem;
+  }
+
+  .letter-signature {
+    font-size: 2.8rem;
+  }
+
+  .letter-closing {
+    font-size: 1.1rem;
+  }
+}
