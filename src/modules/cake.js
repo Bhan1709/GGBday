@@ -113,51 +113,81 @@ try {
     return t;
   }
 
-  // Buttercream: warm ivory with fine crumb speckle + soft sheen bands
-  const buttercreamTex = makeTexture(256, 256, (g) => {
-    g.fillStyle = '#fff6ec';
+  // Chocolate Ganache: deep rich brown with subtle crumb texture and glossy sheen bands
+  const chocolateTex = makeTexture(256, 256, (g) => {
+    g.fillStyle = '#2d1810';
     g.fillRect(0, 0, 256, 256);
-    for (let i = 0; i < 2400; i++) {
+    for (let i = 0; i < 3000; i++) {
       const v = Math.random();
-      g.fillStyle = v < 0.5
-        ? `rgba(204, 178, 160, ${0.04 + Math.random() * 0.06})`
-        : `rgba(255, 255, 255, ${0.06 + Math.random() * 0.1})`;
-      g.fillRect(Math.random() * 256, Math.random() * 256, 1.4, 1.4);
+      g.fillStyle = v < 0.4
+        ? `rgba(77, 44, 30, ${0.05 + Math.random() * 0.08})`
+        : `rgba(45, 24, 16, ${0.08 + Math.random() * 0.12})`;
+      g.fillRect(Math.random() * 256, Math.random() * 256, 1.2, 1.2);
     }
-    for (let b = 0; b < 5; b++) {
-      const y = 18 + b * 52 + Math.random() * 12;
-      const gr = g.createLinearGradient(0, y - 16, 0, y + 16);
-      gr.addColorStop(0, 'rgba(255,255,255,0)');
-      gr.addColorStop(0.5, `rgba(255,240,226,${0.06 + Math.random() * 0.05})`);
-      gr.addColorStop(1, 'rgba(255,255,255,0)');
+    for (let b = 0; b < 6; b++) {
+      const y = 15 + b * 42 + Math.random() * 10;
+      const gr = g.createLinearGradient(0, y - 12, 0, y + 12);
+      gr.addColorStop(0, 'rgba(0,0,0,0)');
+      gr.addColorStop(0.5, `rgba(101, 67, 33, ${0.08 + Math.random() * 0.06})`);
+      gr.addColorStop(1, 'rgba(0,0,0,0)');
       g.fillStyle = gr;
-      g.fillRect(0, y - 16, 256, 32);
+      g.fillRect(0, y - 12, 256, 24);
+    }
+    // Subtle gloss highlights
+    for (let h = 0; h < 3; h++) {
+      const hy = 30 + h * 80 + Math.random() * 20;
+      const hg = g.createLinearGradient(0, hy - 2, 0, hy + 2);
+      hg.addColorStop(0, 'rgba(0,0,0,0)');
+      hg.addColorStop(0.5, 'rgba(139, 90, 43, 0.12)');
+      hg.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = hg;
+      g.fillRect(0, hy - 2, 256, 4);
     }
   });
 
-  // Strawberry: red gradient + pale seeds + gloss highlight
-  const strawberryTex = makeTexture(128, 128, (g) => {
-    const gr = g.createRadialGradient(64, 44, 4, 64, 70, 78);
-    gr.addColorStop(0, '#ff6d6d');
-    gr.addColorStop(0.55, '#e33d50');
-    gr.addColorStop(1, '#a8162c');
+  // Cherry: deep red with glossy highlight
+  const cherryTex = makeTexture(128, 128, (g) => {
+    const gr = g.createRadialGradient(64, 40, 4, 64, 68, 72);
+    gr.addColorStop(0, '#e84d4d');
+    gr.addColorStop(0.4, '#b82a2a');
+    gr.addColorStop(0.7, '#8b1a1a');
+    gr.addColorStop(1, '#5a0d0d');
     g.fillStyle = gr;
     g.fillRect(0, 0, 128, 128);
-    for (let i = 0; i < 42; i++) {
-      const a = Math.random() * Math.PI * 2;
-      const r = Math.sqrt(Math.random()) * 48 + 8;
-      const x = 64 + Math.cos(a) * r;
-      const y = 64 + Math.sin(a) * r;
-      if (x < 10 || x > 118 || y < 10 || y > 118) continue;
-      g.fillStyle = 'rgba(255, 226, 140, 0.9)';
-      g.beginPath();
-      g.ellipse(x, y, 1.5, 2.4, Math.random() * Math.PI, 0, Math.PI * 2);
-      g.fill();
-    }
-    g.fillStyle = 'rgba(255,255,255,0.3)';
+    // Stem indent
+    g.fillStyle = 'rgba(0,0,0,0.25)';
     g.beginPath();
-    g.ellipse(50, 36, 15, 10, -0.35, 0, Math.PI * 2);
+    g.ellipse(64, 28, 8, 4, 0, 0, Math.PI * 2);
     g.fill();
+    // Gloss highlight
+    g.fillStyle = 'rgba(255,255,255,0.25)';
+    g.beginPath();
+    g.ellipse(48, 44, 18, 12, -0.4, 0, Math.PI * 2);
+    g.fill();
+    // Secondary highlight
+    g.fillStyle = 'rgba(255,200,200,0.15)';
+    g.beginPath();
+    g.ellipse(80, 70, 20, 10, 0.3, 0, Math.PI * 2);
+    g.fill();
+  });
+
+  // Chocolate shavings texture
+  const shavingTex = makeTexture(128, 128, (g) => {
+    g.fillStyle = '#1a0d08';
+    g.fillRect(0, 0, 128, 128);
+    for (let i = 0; i < 120; i++) {
+      const x = Math.random() * 128;
+      const y = Math.random() * 128;
+      const len = 8 + Math.random() * 16;
+      const angle = Math.random() * Math.PI * 0.5 - Math.PI * 0.25;
+      const w = 1.5 + Math.random() * 1.5;
+      g.fillStyle = `rgba(77, 44, 30, ${0.6 + Math.random() * 0.3})`;
+      g.save();
+      g.translate(x, y);
+      g.rotate(angle);
+      g.fillRect(0, 0, len, w);
+      g.restore();
+    }
   });
 
   // Soft radial glow sprite for flames & sparkles
@@ -219,17 +249,17 @@ try {
   key.shadow.bias = -0.0006;
   scene.add(key);
 
-  const rim = new THREE.DirectionalLight(0x9fd4ff, 0.55);
+  const rim = new THREE.DirectionalLight(0xffd4b8, 0.5);
   rim.position.set(-6, 7, -9);
   scene.add(rim);
 
-  const fill = new THREE.DirectionalLight(0xffc9d8, 0.4);
+  const fill = new THREE.DirectionalLight(0xffd9c8, 0.35);
   fill.position.set(0, 1.5, 8);
   scene.add(fill);
 
   // ── Shared decorative materials / helpers ───────────────────────────────
-  const GOLD = std(0xd8b36a, { roughness: 0.32, metalness: 0.85 });
-  const WHITE_PIPE = std(0xffffff, { roughness: 0.5 });
+  const GOLD = std(0xc9a876, { roughness: 0.28, metalness: 0.9 }); // warm bronze
+  const CHOCOLATE_PIPE = std(0x3d2314, { roughness: 0.45 });
 
   function goldRing(radius, y, tube = 0.045) {
     const m = new THREE.Mesh(new THREE.TorusGeometry(radius, tube, 6, 96), GOLD);
@@ -240,7 +270,7 @@ try {
     return m;
   }
 
-  function pipedRing(radius, y, count, size, mat = WHITE_PIPE, ySpread = 0.05) {
+  function pipedRing(radius, y, count, size, mat = CHOCOLATE_PIPE, ySpread = 0.05) {
     const geo = new THREE.IcosahedronGeometry(size, 1);
     for (let i = 0; i < count; i++) {
       const a = (i / count) * Math.PI * 2;
@@ -256,8 +286,8 @@ try {
     }
   }
 
-  // ── Plate (ceramic with gold rim) ────────────────────────────────────────
-  const plateMat = std(0xfffdf7, { roughness: 0.35, metalness: 0.02 });
+  // ── Plate (dark ceramic with bronze rim) ────────────────────────────────────────
+  const plateMat = std(0x2a1f18, { roughness: 0.4, metalness: 0.02 });
   const plate = new THREE.Mesh(new THREE.CylinderGeometry(3.55, 3.85, 0.24, 72), plateMat);
   plate.position.y = -0.12;
   plate.receiveShadow = true;
@@ -279,7 +309,7 @@ try {
       pos.setXYZ(i, v3.x, v3.y, v3.z);
     }
     geo.computeVertexNormals();
-    const m = new THREE.Mesh(geo, std(0xffffff, { map, roughness: 0.62 }));
+    const m = new THREE.Mesh(geo, std(0xffffff, { map, roughness: 0.55 }));
     m.position.y = y0 + height / 2;
     m.castShadow = true;
     m.receiveShadow = true;
@@ -287,8 +317,8 @@ try {
     return m;
   }
 
-  buildTier(2.75, 1.45, 0, buttercreamTex);   // bottom tier, spans y 0 → 1.45
-  buildTier(1.7, 1.15, 1.45, buttercreamTex); // top tier,    spans y 1.45 → 2.6
+  buildTier(2.75, 1.45, 0, chocolateTex); // bottom tier, spans y 0 → 1.45
+  buildTier(1.7, 1.15, 1.45, chocolateTex); // top tier,    spans y 1.45 → 2.6
 
   // Decorative trims
   pipedRing(2.82, 0.14, 40, 0.075);      // piped base ruffle on bottom tier
@@ -300,14 +330,15 @@ try {
 
   const capDisc = new THREE.Mesh(
     new THREE.CylinderGeometry(1.66, 1.7, 0.16, 72),
-    std(0xffffff, { map: buttercreamTex, roughness: 0.6 })
+    std(0xffffff, { map: chocolateTex, roughness: 0.5 })
   );
   capDisc.position.y = CAP_Y + 0.08;
   capDisc.receiveShadow = true;
   capDisc.castShadow = true;
   scene.add(capDisc);
 
-  pipedRing(1.6, DISC_TOP, 34, 0.07); // scalloped piped border around cap edge
+  // Chocolate piped border
+  pipedRing(1.6, DISC_TOP, 34, 0.07, std(0x3d2314, { roughness: 0.5 }));
 
   // Drip skirt: open cylinder hugging the tier top, bottom edge droops
   const DRIP_LEN = 0.42;
@@ -331,14 +362,14 @@ try {
   skirt.computeVertexNormals();
   const skirtMesh = new THREE.Mesh(
     skirt,
-    std(0xffffff, { map: buttercreamTex, roughness: 0.6, side: THREE.DoubleSide })
+    std(0xffffff, { map: chocolateTex, roughness: 0.5, side: THREE.DoubleSide })
   );
   skirtMesh.position.y = CAP_Y - 0.02;
   skirtMesh.castShadow = true;
   scene.add(skirtMesh);
 
-  // Rounded drip tips at each droop
-  const tipMat = std(0xffffff, { map: buttercreamTex, roughness: 0.6 });
+  // Rounded drip tips at each droop (dark chocolate)
+  const tipMat = std(0x1a0d08, { roughness: 0.4 });
   for (let i = 0; i < D; i++) {
     const a = (i / D) * Math.PI * 2;
     const tip = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 12), tipMat);
@@ -367,7 +398,7 @@ try {
     scene.add(group);
     return group;
   }
-  pipedRose(0, DISC_TOP, 0, 0.65, 0xffe8ef);
+  pipedRose(0, DISC_TOP, 0, 0.65, 0x4a2c1a);
 
   // ── Toppings ─────────────────────────────────────────────────────────────
   function makeStrawberry(size) {
@@ -452,39 +483,85 @@ try {
     return m;
   }
 
-  const macaronColors = [0xffb3c6, 0xb8e0a8, 0xc9b3ff, 0xffe9a8];
-  const toppingCount = 12;
+  // ── Toppings ─────────────────────────────────────────────────────────────
+  function makeCherry(size) {
+    const g = new THREE.Group();
+    const mat = std(0xffffff, { map: cherryTex, roughness: 0.45 });
+    const body = new THREE.Mesh(new THREE.SphereGeometry(size, 24, 16), mat);
+    body.scale.set(1, 1.15, 1);
+    g.add(body);
+    // Stem indent
+    const indent = new THREE.Mesh(
+      new THREE.CylinderGeometry(size * 0.18, size * 0.12, size * 0.25, 8),
+      std(0x2d1a1a, { roughness: 0.7 })
+    );
+    indent.position.y = size * 1.05;
+    g.add(indent);
+    // Stem
+    const stem = new THREE.Mesh(
+      new THREE.CylinderGeometry(size * 0.03, size * 0.04, size * 0.35, 6),
+      std(0x3d2a1a, { roughness: 0.8 })
+    );
+    stem.position.y = size * 1.25;
+    stem.rotation.z = (Math.random() - 0.5) * 0.3;
+    g.add(stem);
+    g.scale.setScalar(0.85 + Math.random() * 0.25);
+    g.rotation.y = Math.random() * Math.PI * 2;
+    return g;
+  }
+
+  function makeTruffle(size) {
+    const g = new THREE.Group();
+    // Truffle body - dark chocolate with dusting
+    const mat = std(0x1a0d08, { roughness: 0.35 });
+    const body = new THREE.Mesh(new THREE.SphereGeometry(size, 20, 16), mat);
+    g.add(body);
+    // Light dusting on top
+    const dust = new THREE.Mesh(
+      new THREE.SphereGeometry(size * 1.02, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2),
+      std(0x3d2818, { roughness: 0.9 })
+    );
+    dust.position.y = size * 0.15;
+    g.add(dust);
+    g.scale.setScalar(0.75 + Math.random() * 0.2);
+    g.rotation.y = Math.random() * Math.PI * 2;
+    return g;
+  }
+
+  const toppingCount = 14;
   for (let i = 0; i < toppingCount; i++) {
-    const a = (i / toppingCount) * Math.PI * 2 + Math.random() * 0.3;
-    const r = 0.5 + Math.random() * 0.25;
+    const a = (i / toppingCount) * Math.PI * 2 + Math.random() * 0.25;
+    const r = 0.4 + Math.random() * 0.3;
     let g;
-    if (i % 4 === 0) g = makeBlueberry(0.18 + Math.random() * 0.04);
-    else if (i % 4 === 1) g = makeMacaron(macaronColors[i % macaronColors.length], 0.85);
-    else g = makeStrawberry(0.42);
+    if (i % 3 === 0) g = makeCherry(0.22 + Math.random() * 0.03);
+    else if (i % 3 === 1) g = makeBlueberry(0.16 + Math.random() * 0.03);
+    else g = makeTruffle(0.18 + Math.random() * 0.02);
     g.position.set(Math.cos(a) * r, DISC_TOP, Math.sin(a) * r);
     g.rotation.x = -0.12 + Math.random() * 0.12;
     scene.add(g);
   }
 
-  for (let i = 0; i < 5; i++) {
+  // Mint leaves (fewer, subtle)
+  for (let i = 0; i < 4; i++) {
     const a = Math.random() * Math.PI * 2;
-    const r = 0.5 + Math.random() * 0.45;
+    const r = 0.5 + Math.random() * 0.35;
     const lf = makeMintLeaf();
     lf.position.set(Math.cos(a) * r, DISC_TOP + 0.02, Math.sin(a) * r);
     lf.rotation.z = Math.random() * Math.PI;
     scene.add(lf);
   }
 
-  const sprinkleColors = [0xff5d8f, 0xffc44d, 0x6fc2ef, 0x9be59b, 0xd4a5ff, 0xfff1a8];
-  for (let i = 0; i < 20; i++) {
+  // Chocolate shavings instead of sprinkles
+  for (let i = 0; i < 25; i++) {
     const a = Math.random() * Math.PI * 2;
-    const r = 0.7 + Math.random() * 0.3;
+    const r = 0.55 + Math.random() * 0.35;
+    const len = 0.12 + Math.random() * 0.08;
     const m = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.028, 0.028, 0.16, 6),
-      std(sprinkleColors[i % sprinkleColors.length], { roughness: 0.5 })
+      new THREE.BoxGeometry(len, 0.012, 0.035),
+      std(0x1a0d08, { roughness: 0.3 })
     );
-    m.position.set(Math.cos(a) * r, DISC_TOP + 0.085, Math.sin(a) * r);
-    m.rotation.set((Math.random() - 0.5) * 0.5, Math.random() * Math.PI, (Math.random() - 0.5) * 0.5);
+    m.position.set(Math.cos(a) * r, DISC_TOP + 0.08, Math.sin(a) * r);
+    m.rotation.set((Math.random() - 0.5) * 0.4, Math.random() * Math.PI, (Math.random() - 0.5) * 0.3);
     m.castShadow = true;
     scene.add(m);
   }
@@ -506,7 +583,7 @@ try {
     new THREE.ExtrudeGeometry(makeHeartShape(0.22), {
       depth: 0.06, bevelEnabled: true, bevelSize: 0.02, bevelThickness: 0.02
     }),
-    std(0xff3d5e, { roughness: 0.35, metalness: 0.1, emissive: 0xff1144, emissiveIntensity: 0.25 })
+    std(0x2d1810, { roughness: 0.3, metalness: 0.15, emissive: 0x3d2314, emissiveIntensity: 0.15 })
   );
   heartMesh.rotation.z = Math.PI;
   heartMesh.position.set(-0.35, 0.85, 2.78);
@@ -516,10 +593,10 @@ try {
   // ── Candles, flames & smoke ──────────────────────────────────────────────
   const CANDLE_COUNT = 4;
   const candleColors = [
-    [0xff8fa8, 0xffffff],
-    [0x9ecbff, 0xffffff],
-    [0xc9a6ff, 0xffffff],
-    [0xa5e8c4, 0xffffff]
+    [0x4a2c1a, 0x2d1810],  // dark chocolate
+    [0x5d3a22, 0x3d2314],  // milk chocolate
+    [0x6b442a, 0x4a2c1a],  // dark milk
+    [0x3d2314, 0x1a0d08]   // extra dark
   ];
   const candlePositions = [0.785, 2.356, 3.927, 5.498]
     .map(a => [Math.cos(a) * 1.22, Math.sin(a) * 1.22]);
