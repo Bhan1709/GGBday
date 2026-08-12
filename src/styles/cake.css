@@ -74,8 +74,10 @@
 
 /* ── Wish Reveal ───────────────────────────────────────────────────────── */
 .wish-reveal-box {
-  margin-top: 2rem;
-  padding: 2rem 2.5rem;
+  margin-top: 0;
+  max-height: 0;
+  padding: 0;
+  overflow: hidden;
   background: rgba(255, 196, 77, 0.09);
   border: 1px solid rgba(255, 196, 77, 0.4);
   border-radius: var(--radius-md);
@@ -83,11 +85,18 @@
   width: 100%;
   opacity: 0;
   transform: translateY(24px) scale(0.97);
-  transition: all 0.7s var(--ease-spring);
+  transition: max-height 0.7s var(--ease-spring),
+              margin-top 0.7s var(--ease-spring),
+              padding 0.7s var(--ease-spring),
+              opacity 0.5s var(--ease-spring),
+              transform 0.7s var(--ease-spring);
   pointer-events: none;
 }
 
 .wish-reveal-box.active {
+  max-height: 420px;
+  margin-top: 2rem;
+  padding: 2rem 2.5rem;
   opacity: 1;
   transform: translateY(0) scale(1);
   pointer-events: auto;

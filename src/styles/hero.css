@@ -102,7 +102,7 @@
   z-index: 1;
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: clamp(1.05rem, 2.3vw, 1.3rem);
+  font-size: clamp(1.25rem, 2.6vw, 1.55rem);
   color: var(--text-muted);
   max-width: 620px;
   margin: 0 auto 2.8rem;
