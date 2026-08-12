@@ -170,15 +170,15 @@
       </div>
 
       <div class="collage-wrap glass-panel">
-        <!-- Three.js Photo Collage Canvas -->
+        <!-- Three.js Photo Carousel Canvas -->
         <div id="photo-collage-container"></div>
 
-        <p class="collage-hint">🖱️ Wander through our memories — touch one to hold it near, or let them dance all over again.</p>
+        <p class="collage-hint">🖱️ Drag to stroll through our story — click any photo to see it up close 🖼️</p>
 
         <div class="collage-controls">
-          <button id="shuffle-photos-btn" class="btn-primary btn-gold">
-            Let Them Dance Again ✨
-          </button>
+          <button id="collage-prev-btn" class="btn-primary btn-gold" aria-label="Previous memory">←</button>
+          <span class="collage-counter" id="collage-counter">1 / 60</span>
+          <button id="collage-next-btn" class="btn-primary btn-gold" aria-label="Next memory">→</button>
         </div>
       </div>
     </section>
@@ -269,6 +269,14 @@
         </button>
       </form>
     </div>
+  </div>
+
+  <!-- Photo Lightbox (click to enlarge) -->
+  <div class="photo-lightbox" id="photo-lightbox" aria-hidden="true">
+    <button class="photo-lightbox-close" id="photo-lightbox-close" aria-label="Close">✕</button>
+    <button class="photo-lightbox-nav prev" id="photo-lightbox-prev" aria-label="Previous memory">←</button>
+    <img id="photo-lightbox-img" alt="Memory" />
+    <button class="photo-lightbox-nav next" id="photo-lightbox-next" aria-label="Next memory">→</button>
   </div>
 
   <!-- Floating Audio Bar -->

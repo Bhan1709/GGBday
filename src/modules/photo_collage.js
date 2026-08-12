@@ -1,355 +1,335 @@
-// ─── Three.js Random Photo Collage ─────────────────────────────────────────
-// A scatter of polaroid-style photos floating over the page background.
-// Photos are loaded from the paths in CONFIG.photos; if a file is missing a
-// pretty procedural placeholder is drawn instead. Hover to lift a photo,
-// click to bring it front-and-center, and hit Shuffle to re-scatter them.
 export function initPhotoCollage(photos) {
   const container = document.getElementById('photo-collage-container');
-  const shuffleBtn = document.getElementById('shuffle-photos-btn');
+  const prevBtn = document.getElementById('collage-prev-btn');
+  const nextBtn = document.getElementById('collage-next-btn');
+  const counterEl = document.getElementById('collage-counter');
+  const lightbox = document.getElementById('photo-lightbox');
+  const lightboxImg = document.getElementById('photo-lightbox-img');
+  const lightboxPrev = document.getElementById('photo-lightbox-prev');
+  const lightboxNext = document.getElementById('photo-lightbox-next');
+  const lightboxClose = document.getElementById('photo-lightbox-close');
   if (!container || typeof THREE === 'undefined') return;
 
-  // ── Renderer ─────────────────────────────────────────────────────────────
-  const W = container.clientWidth  || 700;
-  const H = container.clientHeight || 560;
+  const photosArr = Array.isArray(photos) ? photos : [];
+  const COUNT = photosArr.length;
+  if (!COUNT) return;
 
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-  renderer.setSize(W, H);
+  let W = container.clientWidth || 900;
+  let H = container.clientHeight || 560;
+
+  let renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  } catch (e) {
+    return;
+  }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.outputEncoding = THREE.sRGBEncoding;
-  renderer.domElement.style.touchAction = 'none';
-  renderer.domElement.style.cursor = 'default';
+  renderer.domElement.style.touchAction = 'pan-y';
+  renderer.domElement.style.cursor = 'grab';
   container.appendChild(renderer.domElement);
 
-  // ── Scene & Camera ───────────────────────────────────────────────────────
-  const scene  = new THREE.Scene();
+  const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(45, W / H, 0.1, 100);
-  camera.position.set(0, 0.5, 13);
+  camera.position.set(0, 0, 12);
 
-  // The collage roughly spans these world bounds (incl. jitter) — used to fit
-  // the camera on resize so the whole wall is always visible.
-  const COLLAGE_W = 11;
-  const COLLAGE_H = 9.4;
+  const group = new THREE.Group();
+  scene.add(group);
 
-  function fitZ(w, h) {
-    const aspect = w / h;
-    const f = 2 * Math.tan(THREE.MathUtils.degToRad(45 / 2));
-    const needH = (COLLAGE_H * 1.16) / f;
-    const needW = (COLLAGE_W * 1.24) / (f * aspect);
-    return Math.max(needH, needW, 8);
+  const MAX_OFF = 2;
+  const ANGLE = 0.45;
+  let SPACING = 4.0;
+  let Z_STEP = 2.9;
+
+  let current = 0;
+  let target = 0;
+  let dragging = false;
+  let paused = false;
+  let autoTimer = null;
+  let lightboxIndex = -1;
+
+  function wrapOffset(d) {
+    if (d > COUNT / 2) d -= COUNT;
+    if (d < -COUNT / 2) d += COUNT;
+    return d;
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────────────
-  function coverDraw(g, img, x, y, w, h) {
-    const iw = img.naturalWidth || img.width || 1;
-    const ih = img.naturalHeight || img.height || 1;
-    const scale = Math.max(w / iw, h / ih);
-    const dw = iw * scale;
-    const dh = ih * scale;
-    g.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+  function goTo(next) {
+    target = ((next % COUNT) + COUNT) % COUNT;
+    scheduleAuto();
   }
 
-  // Draws the photo (real image or placeholder) onto a fixed-aspect canvas so
-  // every frame keeps its orientation.
-  function photoCanvasOf(draw, portrait) {
-    const c = document.createElement('canvas');
-    c.width  = portrait ? 440 : 560;
-    c.height = portrait ? 560 : 440;
-    draw(c.getContext('2d'));
-    return c;
+  function scheduleAuto() {
+    stopAuto();
+    autoTimer = setInterval(() => {
+      if (!paused && !dragging) goTo(target + 1);
+    }, 4500);
   }
 
-  const PLACEHOLDER_STYLES = [
-    ['#ffd1dc', '#ff8fb1', '🌸'], ['#ffe4a8', '#ffb347', '🍋'],
-    ['#c9e9ff', '#6fc2ef', '🌊'], ['#d4ffcf', '#7ecb6f', '🌿'],
-    ['#e6d3ff', '#b98af0', '🌙'], ['#fff0b8', '#ffc44d', '✨'],
-    ['#ffd9e8', '#ff7bab', '🎀'], ['#cff5ff', '#57b8d8', '🌷'],
-    ['#ffe8d1', '#ff9a62', '🍑'], ['#d9f6e8', '#5ecf9b', '🍃'],
-    ['#f3d7ff', '#c96fe0', '💫'], ['#ffead4', '#ffb38a', '🌻']
-  ];
-
-  function makePlaceholderCanvas(i, portrait) {
-    const [c1, c2, emoji] = PLACEHOLDER_STYLES[i % PLACEHOLDER_STYLES.length];
-    return photoCanvasOf((g) => {
-      const grad = g.createLinearGradient(0, 0, g.canvas.width, g.canvas.height);
-      grad.addColorStop(0, c1);
-      grad.addColorStop(1, c2);
-      g.fillStyle = grad;
-      g.fillRect(0, 0, g.canvas.width, g.canvas.height);
-
-      g.globalAlpha = 0.22;
-      for (let k = 0; k < 3; k++) {
-        g.fillStyle = k % 2 ? '#ffffff' : '#000000';
-        g.beginPath();
-        g.arc(Math.random() * g.canvas.width, Math.random() * g.canvas.height, 40 + Math.random() * 70, 0, Math.PI * 2);
-        g.fill();
-      }
-      g.globalAlpha = 1;
-
-      g.fillStyle = '#ffffff';
-      g.textAlign = 'center';
-      g.textBaseline = 'middle';
-      g.font = '90px serif';
-      g.fillText(emoji, g.canvas.width / 2, g.canvas.height / 2 - 18);
-      g.font = 'bold 26px Jost, sans-serif';
-      g.fillStyle = 'rgba(255,255,255,0.92)';
-      g.fillText('Photo ' + (i + 1), g.canvas.width / 2, g.canvas.height / 2 + 72);
-      g.font = '14px Jost, sans-serif';
-      g.fillStyle = 'rgba(255,255,255,0.75)';
-      g.fillText('drop a picture here', g.canvas.width / 2, g.canvas.height / 2 + 100);
-    }, portrait);
+  function stopAuto() {
+    if (autoTimer) {
+      clearInterval(autoTimer);
+      autoTimer = null;
+    }
   }
 
-  // Wraps the photo canvas in a white polaroid frame + caption band.
-  function buildPolaroidFrame(photoCanvas, i) {
-    const margin = 22;
-    const capH = 84;
-    const cw = photoCanvas.width + margin * 2;
-    const ch = photoCanvas.height + margin * 2 + capH;
+  function makePolaroid(img, i) {
+    const margin = 18;
+    const band = 58;
+    const photoW = 520;
+    const iw = img ? (img.naturalWidth || img.width || 4) : 4;
+    const ih = img ? (img.naturalHeight || img.height || 5) : 5;
+    const photoH = Math.round((ih / iw) * photoW);
+    const cw = photoW + margin * 2;
+    const ch = photoH + margin * 2 + band;
     const c = document.createElement('canvas');
     c.width = cw;
     c.height = ch;
     const g = c.getContext('2d');
-
     g.fillStyle = '#fdfbf8';
     g.fillRect(0, 0, cw, ch);
-    g.fillStyle = 'rgba(0,0,0,0.045)';
-    g.fillRect(0, 0, cw, 4);
-    g.fillRect(0, ch - 4, cw, 4);
-    g.fillRect(0, 0, 4, ch);
-    g.fillRect(cw - 4, 0, 4, ch);
-
-    g.drawImage(photoCanvas, margin, margin);
-    g.strokeStyle = 'rgba(0,0,0,0.07)';
-    g.strokeRect(margin - 0.5, margin - 0.5, photoCanvas.width + 1, photoCanvas.height + 1);
-
-    const captions = ['✨', '🌸', '🌙', '🍋', '☕', '🌿', '💕', '🍑', '🌊', '🎀', '🌻', '🍕'];
-    g.font = 'italic 30px "Dancing Script", cursive';
+    if (img) {
+      const scale = Math.max(photoW / iw, photoH / ih);
+      const dw = iw * scale;
+      const dh = ih * scale;
+      g.drawImage(img, margin + (photoW - dw) / 2, margin + (photoH - dh) / 2, dw, dh);
+    } else {
+      const grad = g.createLinearGradient(0, 0, cw, ch);
+      grad.addColorStop(0, '#ffd1dc');
+      grad.addColorStop(1, '#ffb347');
+      g.fillStyle = grad;
+      g.fillRect(margin, margin, photoW, photoH);
+      g.fillStyle = '#ffffff';
+      g.font = '140px serif';
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillText('🌙', margin + photoW / 2, margin + photoH / 2);
+    }
     g.fillStyle = '#9c8a94';
+    g.font = 'italic 30px "Dancing Script", "Great Vibes", cursive';
     g.textAlign = 'center';
     g.textBaseline = 'middle';
-    g.fillText(captions[i % captions.length] + '   ' + (i + 1), cw / 2, ch - capH / 2);
+    g.fillText(`♡  ${i + 1}`, cw / 2, margin + photoH + band / 2);
     return c;
   }
 
-  const tapeColors = [0xffb3c6, 0xb8e0a8, 0xc9b3ff, 0xffe9a8, 0x9ecbff, 0xffc9a3];
-
-  // ── Layout ───────────────────────────────────────────────────────────────
-  function layoutPositions(count) {
-    const cols = 4;
-    const rows = Math.ceil(count / cols);
-    const spacingX = 2.45;
-    const spacingY = 2.95;
-    const out = [];
-    for (let i = 0; i < count; i++) {
-      const col = i % cols;
-      const row = Math.floor(i / cols);
-      out.push({
-        x: (col - (cols - 1) / 2) * spacingX + (Math.random() - 0.5) * 0.8,
-        y: (row - (rows - 1) / 2) * spacingY + (Math.random() - 0.5) * 0.9,
-        z: -0.7 + Math.random() * 1.2,
-        rz: (Math.random() - 0.5) * 0.26,
-        s: 0.92 + Math.random() * 0.18
-      });
-    }
-    return out;
-  }
-
-  // ── Build the collage ────────────────────────────────────────────────────
-  const COUNT = Array.isArray(photos) && photos.length ? photos.length : 12;
-  const group = new THREE.Group();
-  scene.add(group);
-
   const items = [];
-  const layouts = layoutPositions(COUNT);
+  const raycastMeshes = [];
+  const CARD_W = 4.0;
 
   for (let i = 0; i < COUNT; i++) {
-    const portrait = i % 3 !== 1; // 2/3 portrait, 1/3 landscape
-    const layout = layouts[i];
-
-    // Start with a placeholder so something shows immediately
-    const frameCanvas = buildPolaroidFrame(makePlaceholderCanvas(i, portrait), i);
-    const tex = new THREE.CanvasTexture(frameCanvas);
+    const pc = makePolaroid(null, i);
+    const tex = new THREE.CanvasTexture(pc);
     tex.encoding = THREE.sRGBEncoding;
     tex.anisotropy = 8;
 
-    const Wd = 2.1 * (frameCanvas.width / 440);   // portrait width basis
-    const Hd = 2.1 * (frameCanvas.height / 440);
+    const cardH = CARD_W * (pc.height / pc.width);
 
     const mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(Wd, Hd),
-      new THREE.MeshBasicMaterial({ map: tex, transparent: true })
+      new THREE.PlaneGeometry(CARD_W, cardH),
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide })
     );
     mesh.userData.index = i;
+    group.add(mesh);
+    raycastMeshes.push(mesh);
 
-    // Soft drop shadow
-    const shadow = new THREE.Mesh(
-      new THREE.PlaneGeometry(Wd * 1.04, Hd * 1.04),
-      new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.2, depthWrite: false })
-    );
-    shadow.position.set(0.15, -0.17, -0.02);
+    const item = { index: i, mesh, tex };
+    items.push(item);
 
-    // Washi tape
-    const tape = new THREE.Mesh(
-      new THREE.PlaneGeometry(Wd * 0.34, 0.34),
-      new THREE.MeshBasicMaterial({ color: tapeColors[i % tapeColors.length], transparent: true, opacity: 0.5, side: THREE.DoubleSide })
-    );
-    tape.rotation.z = Math.PI / 4;
-    tape.position.set(0, Hd / 2 - 0.12, 0.01);
-
-    const frame = new THREE.Group();
-    frame.add(shadow, mesh, tape);
-    frame.position.set(layout.x, layout.y, layout.z);
-    frame.rotation.z = layout.rz;
-    frame.scale.setScalar(layout.s);
-    group.add(frame);
-
-    const ph = {
-      index: i,
-      portrait,
-      mesh,
-      tex,
-      frame,
-      home: { ...layout },
-      cur: { x: layout.x, y: layout.y, z: layout.z, rz: layout.rz },
-      curScale: layout.s,
-      idlePhase: Math.random() * Math.PI * 2
+    const img = new Image();
+    img.onload = () => {
+      const c = makePolaroid(img, i);
+      tex.image = c;
+      tex.needsUpdate = true;
+      const nh = CARD_W * (c.height / c.width);
+      item.mesh.geometry.dispose();
+      item.mesh.geometry = new THREE.PlaneGeometry(CARD_W, nh);
     };
-    items.push(ph);
-
-    // Try to load the real photo (keep placeholder on failure)
-    const src = photos && photos[i];
-    if (src) {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => {
-        const pc = photoCanvasOf((g) => coverDraw(g, img, 0, 0, g.canvas.width, g.canvas.height), portrait);
-        const fc = buildPolaroidFrame(pc, i);
-        tex.image = fc;
-        tex.needsUpdate = true;
-      };
-      img.onerror = () => { /* keep placeholder */ };
-      img.src = src;
-    }
+    img.src = photosArr[i];
   }
 
-  // ── Interaction ──────────────────────────────────────────────────────────
+  function fitZ() {
+    const f = 2 * Math.tan(THREE.MathUtils.degToRad(45 / 2));
+    const halfSpan = SPACING * MAX_OFF + 2.0;
+    const needW = (halfSpan * 2) / (f * (W / H));
+    const maxCardH = CARD_W * 1.2 * 1.7;
+    const needH = maxCardH / (0.78 * f);
+    return Math.max(needW, needH, 7);
+  }
+
+  function applyMetrics() {
+    SPACING = Math.min(4.0, Math.max(2.8, W * 0.0048));
+    Z_STEP = SPACING * 0.74;
+    camera.aspect = W / H;
+    camera.position.z = fitZ();
+    camera.updateProjectionMatrix();
+  }
+
+  applyMetrics();
+
   const raycaster = new THREE.Raycaster();
   const pointer = new THREE.Vector2();
-  const meshes = items.map(p => p.mesh);
-  let hoveredIndex = -1;
-  let selectedIndex = -1;
 
   function pick(clientX, clientY) {
     const rect = renderer.domElement.getBoundingClientRect();
     pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
     pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(pointer, camera);
-    const hits = raycaster.intersectObjects(meshes);
+    const hits = raycaster.intersectObjects(raycastMeshes).filter((h) => h.object.visible);
     return hits.length ? hits[0].object.userData.index : -1;
   }
 
-  renderer.domElement.addEventListener('pointermove', (e) => {
-    const idx = pick(e.clientX, e.clientY);
-    if (idx !== hoveredIndex) {
-      hoveredIndex = idx;
-      renderer.domElement.style.cursor = idx >= 0 ? 'pointer' : 'default';
-    }
-  });
+  function originalSrc(i) {
+    return photosArr[i].replace(/thumbs\//, '');
+  }
 
-  renderer.domElement.addEventListener('pointerleave', () => {
-    hoveredIndex = -1;
-    renderer.domElement.style.cursor = 'default';
-  });
+  function showLightbox(idx) {
+    lightboxIndex = ((idx % COUNT) + COUNT) % COUNT;
+    lightboxImg.src = originalSrc(lightboxIndex);
+  }
 
-  renderer.domElement.addEventListener('click', (e) => {
-    const idx = pick(e.clientX, e.clientY);
-    if (idx >= 0) {
-      selectedIndex = selectedIndex === idx ? -1 : idx;
-    } else if (selectedIndex >= 0) {
-      selectedIndex = -1;
-    }
-  });
+  function openLightbox(idx) {
+    if (!lightbox || !lightboxImg) return;
+    showLightbox(idx);
+    lightbox.classList.add('active');
+    lightbox.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('lightbox-open');
+    paused = true;
+    stopAuto();
+  }
 
-  if (shuffleBtn) {
-    shuffleBtn.addEventListener('click', () => {
-      const fresh = layoutPositions(COUNT);
-      items.forEach((p, i) => {
-        if (selectedIndex === i) return;
-        p.home = { ...fresh[i] };
-      });
+  function closeLightbox() {
+    if (!lightbox || lightboxIndex < 0) return;
+    lightbox.classList.remove('active');
+    lightbox.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('lightbox-open');
+    lightboxIndex = -1;
+    paused = false;
+    scheduleAuto();
+  }
+
+  if (lightboxClose) lightboxClose.addEventListener('click', closeLightbox);
+  if (lightboxPrev) lightboxPrev.addEventListener('click', () => showLightbox(lightboxIndex - 1));
+  if (lightboxNext) lightboxNext.addEventListener('click', () => showLightbox(lightboxIndex + 1));
+  if (lightbox) {
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) closeLightbox();
     });
   }
 
-  // ── Mouse parallax ───────────────────────────────────────────────────────
-  let mouseNx = 0, mouseNy = 0, mx = 0, my = 0;
-  window.addEventListener('pointermove', (e) => {
-    mouseNx = (e.clientX / window.innerWidth) * 2 - 1;
-    mouseNy = (e.clientY / window.innerHeight) * 2 - 1;
+  let downX = 0;
+  let downY = 0;
+  let moved = false;
+  let startTarget = 0;
+
+  renderer.domElement.addEventListener('pointerdown', (e) => {
+    downX = e.clientX;
+    downY = e.clientY;
+    moved = false;
+    startTarget = target;
+    dragging = true;
+    renderer.domElement.style.cursor = 'grabbing';
   });
 
-  // ── Animation loop ───────────────────────────────────────────────────────
+  window.addEventListener('pointermove', (e) => {
+    if (dragging) {
+      const dx = e.clientX - downX;
+      const dy = e.clientY - downY;
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        const t = startTarget - Math.round(dx / 110);
+        target = ((t % COUNT) + COUNT) % COUNT;
+      }
+      return;
+    }
+    renderer.domElement.style.cursor = pick(e.clientX, e.clientY) >= 0 ? 'pointer' : 'grab';
+  });
+
+  function endDrag(e) {
+    if (!dragging) return;
+    dragging = false;
+    renderer.domElement.style.cursor = 'grab';
+    scheduleAuto();
+    if (!moved) {
+      const idx = pick(e.clientX, e.clientY);
+      if (idx >= 0 && idx === (Math.round(current) % COUNT)) {
+        openLightbox(idx);
+      } else if (idx >= 0) {
+        goTo(idx);
+      }
+    }
+  }
+
+  renderer.domElement.addEventListener('pointerup', endDrag);
+  renderer.domElement.addEventListener('pointercancel', () => {
+    dragging = false;
+    scheduleAuto();
+  });
+  renderer.domElement.addEventListener('pointerenter', () => { paused = true; });
+  renderer.domElement.addEventListener('pointerleave', () => {
+    paused = false;
+    if (lightboxIndex < 0) scheduleAuto();
+  });
+
+  if (prevBtn) prevBtn.addEventListener('click', () => goTo(target - 1));
+  if (nextBtn) nextBtn.addEventListener('click', () => goTo(target + 1));
+
+  window.addEventListener('keydown', (e) => {
+    if (lightboxIndex >= 0) {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') showLightbox(lightboxIndex - 1);
+      if (e.key === 'ArrowRight') showLightbox(lightboxIndex + 1);
+      return;
+    }
+    if (e.key === 'ArrowLeft') goTo(target - 1);
+    if (e.key === 'ArrowRight') goTo(target + 1);
+  });
+
   const clock = new THREE.Clock();
+  let lastCounter = -1;
 
   function animate() {
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
 
-    mx += (mouseNx - mx) * 0.04;
-    my += (mouseNy - my) * 0.04;
-    camera.position.x = mx * 1.3;
-    camera.position.y = 0.5 + my * 0.55;
-    camera.lookAt(0, 0, 0);
+    let diff = target - current;
+    if (diff > COUNT / 2) diff -= COUNT;
+    if (diff < -COUNT / 2) diff += COUNT;
+    current += diff * 0.09;
+    if (Math.abs(diff) < 0.01) current = target;
 
-    items.forEach(p => {
-      const h = p.home;
-      let tx = h.x, ty = h.y, tz = h.z, tr = h.rz, ts = h.s;
+    for (const item of items) {
+      const off = wrapOffset(item.index - current);
+      const abs = Math.abs(off);
+      const visible = abs <= MAX_OFF + 1;
+      item.mesh.visible = visible;
+      if (!visible) continue;
 
-      if (selectedIndex === p.index) {
-        tx = 0; ty = 0; tz = 1.15; tr = 0; ts = 1.62;
-      } else {
-        // Idle sway
-        tx += Math.sin(t * 0.7 + p.idlePhase) * 0.05;
-        ty += Math.cos(t * 0.55 + p.idlePhase * 1.3) * 0.04;
-        tr += Math.sin(t * 0.8 + p.idlePhase) * 0.02;
-        if (hoveredIndex === p.index) {
-          tz += 0.7;
-          ts *= 1.08;
-          ty += 0.12;
-          tr = 0;
-        }
-      }
+      const scale = abs === 0 ? 1.18 : abs === 1 ? 1.0 : 0.82;
+      item.mesh.position.x = off * SPACING;
+      item.mesh.position.y = Math.sin(t * 0.7 + item.index * 0.35) * 0.03;
+      item.mesh.position.z = -abs * Z_STEP + Math.sin(t * 0.9 + item.index) * 0.05;
+      item.mesh.rotation.y = -off * ANGLE;
+      item.mesh.scale.setScalar(scale);
+      item.mesh.material.opacity = abs <= 1 ? 1 : 0.85;
+    }
 
-      const c = p.cur;
-      const k = 0.085;
-      c.x  += (tx - c.x) * k;
-      c.y  += (ty - c.y) * k;
-      c.z  += (tz - c.z) * k;
-      c.rz += (tr - c.rz) * k;
-      p.curScale += (ts - p.curScale) * k;
-
-      p.frame.position.set(c.x, c.y, c.z);
-      p.frame.rotation.z = c.rz;
-      p.frame.scale.setScalar(p.curScale);
-
-      // Focus dimming: when a photo is selected, fade the others
-      const targetOpacity = selectedIndex >= 0 ? (selectedIndex === p.index ? 1 : 0.28) : 1;
-      p.mesh.material.opacity += (targetOpacity - p.mesh.material.opacity) * 0.12;
-    });
+    const snapped = Math.round(current) % COUNT;
+    if (snapped !== lastCounter) {
+      lastCounter = snapped;
+      if (counterEl) counterEl.textContent = `${snapped + 1} / ${COUNT}`;
+    }
 
     renderer.render(scene, camera);
   }
 
   animate();
+  scheduleAuto();
 
-  // ── Resize ───────────────────────────────────────────────────────────────
-  camera.position.z = fitZ(W, H);
   const ro = new ResizeObserver(() => {
-    const nw = container.clientWidth;
-    const nh = container.clientHeight;
-    renderer.setSize(nw, nh);
-    camera.aspect = nw / nh;
-    camera.position.z = fitZ(nw, nh);
-    camera.updateProjectionMatrix();
+    W = container.clientWidth;
+    H = container.clientHeight;
+    renderer.setSize(W, H);
+    applyMetrics();
   });
   ro.observe(container);
 }
