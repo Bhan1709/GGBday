@@ -140,7 +140,8 @@ export function initPhotoCollage(photos, messageCard = null) {
     const margin = 18;
     const band = 58;
     const photoW = 520;
-    const photoH = 620;
+    // Use a more photo-like aspect ratio (4:5 portrait)
+    const photoH = Math.round(photoW * 1.25);
     const cw = photoW + margin * 2;
     const ch = photoH + margin * 2 + band;
     const c = document.createElement('canvas');
@@ -149,45 +150,67 @@ export function initPhotoCollage(photos, messageCard = null) {
     const g = c.getContext('2d');
     g.scale(scale, scale);
 
+    // White polaroid base
     g.fillStyle = '#fdfbf8';
     g.fillRect(0, 0, cw, ch);
 
+    // Subtle paper texture
+    for (let i = 0; i < 800; i++) {
+      g.fillStyle = `rgba(204, 178, 160, ${0.02 + Math.random() * 0.03})`;
+      g.fillRect(Math.random() * cw, Math.random() * ch, 1.5, 1.5);
+    }
+
+    // Photo area with warm gradient background
     const grad = g.createLinearGradient(0, margin, 0, margin + photoH);
-    grad.addColorStop(0, '#fff6f8');
-    grad.addColorStop(1, '#ffe9ef');
+    grad.addColorStop(0, '#fff8f0');
+    grad.addColorStop(1, '#ffeef5');
     g.fillStyle = grad;
     g.fillRect(margin, margin, photoW, photoH);
 
-    g.strokeStyle = 'rgba(244, 151, 170, 0.5)';
-    g.lineWidth = 2;
-    g.strokeRect(margin + 14, margin + 14, photoW - 28, photoH - 28);
+    // Inner frame
+    g.strokeStyle = 'rgba(244, 151, 170, 0.35)';
+    g.lineWidth = 1.5;
+    g.strokeRect(margin + 10, margin + 10, photoW - 20, photoH - 20);
 
     g.textAlign = 'center';
     g.textBaseline = 'middle';
 
-    g.fillStyle = '#c99aa2';
-    g.font = 'italic 34px "Dancing Script", "Great Vibes", cursive';
-    g.fillText(card.heading || 'For my baby, from my heart', cw / 2, margin + 56);
-
-    g.font = '30px serif';
+    // Small decorative heart at top
+    g.font = '28px serif';
     g.fillStyle = '#f497aa';
-    g.fillText('💖', cw / 2, margin + 100);
+    g.fillText('💖', cw / 2, margin + 42);
 
+    // Heading
+    g.fillStyle = '#c99aa2';
+    g.font = 'italic 32px "Dancing Script", "Great Vibes", cursive';
+    g.fillText(card.heading || 'For my baby, from my heart', cw / 2, margin + 80);
+
+    // Divider line
+    g.strokeStyle = 'rgba(244, 151, 170, 0.4)';
+    g.lineWidth = 1;
+    g.beginPath();
+    g.moveTo(cw / 2 - 60, margin + 100);
+    g.lineTo(cw / 2 + 60, margin + 100);
+    g.stroke();
+
+    // Body text
     const body = card.body || '';
-    g.fillStyle = '#6d5a63';
-    g.font = '30px "Cormorant Garamond", Georgia, serif';
-    const lines = wrapCanvasText(g, body, photoW - 92);
-    let y = margin + 168;
-    const lh = 42;
+    g.fillStyle = '#5a4a52';
+    g.font = '28px "Cormorant Garamond", Georgia, serif';
+    const lines = wrapCanvasText(g, body, photoW - 80);
+    let y = margin + 128;
+    const lh = 38;
     for (const line of lines) {
       g.fillText(line, cw / 2, y);
       y += lh;
     }
 
+    // Signature
     g.fillStyle = '#c99aa2';
-    g.font = 'italic 34px "Great Vibes", "Dancing Script", cursive';
-    g.fillText(card.signature || 'Yours forever and always', cw / 2, y + 8);
+    g.font = 'italic 30px "Great Vibes", "Dancing Script", cursive';
+    g.fillText(card.signature || 'Yours forever and always', cw / 2, y + 24);
 
+    // Polaroid bottom label - matches photos exactly
     g.fillStyle = '#9c8a94';
     g.font = 'italic 30px "Dancing Script", "Great Vibes", cursive';
     g.fillText('♡  ∞', cw / 2, margin + photoH + band / 2);
@@ -231,7 +254,9 @@ export function initPhotoCollage(photos, messageCard = null) {
   }
 
   if (HAS_MESSAGE) {
-    const msgCanvas = makeMessagePolaroid(messageCard);
+    // Use higher resolution on mobile for crispness
+    const msgScale = MOBILE_FACTOR > 1 ? 2 : 1;
+    const msgCanvas = makeMessagePolaroid(messageCard, msgScale);
     messageSrc = makeMessagePolaroid(messageCard, 2).toDataURL('image/png');
     const msgTex = new THREE.CanvasTexture(msgCanvas);
     msgTex.encoding = THREE.sRGBEncoding;
@@ -389,6 +414,12 @@ export function initPhotoCollage(photos, messageCard = null) {
   const clock = new THREE.Clock();
   let lastCounter = -1;
 
+  // Spring animation helper for smoother transitions
+  function springTowards(current, target, stiffness = 0.12, damping = 0.85) {
+    const diff = target - current;
+    return current + diff * stiffness * damping;
+  }
+
   function animate() {
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
@@ -396,8 +427,9 @@ export function initPhotoCollage(photos, messageCard = null) {
     let diff = target - current;
     if (diff > TOTAL / 2) diff -= TOTAL;
     if (diff < -TOTAL / 2) diff += TOTAL;
-    current += diff * 0.09;
-    if (Math.abs(diff) < 0.01) current = target;
+    // Spring-based smoothing for more natural feel
+    current = springTowards(current, target, 0.12, 0.88);
+    if (Math.abs(target - current) < 0.005) current = target;
 
     for (const item of items) {
       const off = wrapOffset(item.index - current);
@@ -408,13 +440,25 @@ export function initPhotoCollage(photos, messageCard = null) {
       item.mesh.visible = visible;
       if (!visible) continue;
 
-      const scale = abs === 0 ? 1.7 : abs === 1 ? 1.0 : 0.7;
-      item.mesh.position.x = off * SPACING;
+      const targetScale = abs === 0 ? 1.7 : abs === 1 ? 1.0 : 0.7;
+      const targetX = off * SPACING;
+      const targetZ = -abs * Z_STEP;
+      const targetRotY = -off * ANGLE;
+      const targetOpacity = abs <= 1 ? 1 : 0.7;
+
+      // Spring smoothing for per-card properties
+      item.currentScale = springTowards(item.currentScale || targetScale, targetScale, 0.18, 0.88);
+      item.currentX = springTowards(item.currentX || targetX, targetX, 0.18, 0.88);
+      item.currentZ = springTowards(item.currentZ || targetZ, targetZ, 0.18, 0.88);
+      item.currentRotY = springTowards(item.currentRotY || targetRotY, targetRotY, 0.18, 0.88);
+      item.currentOpacity = springTowards(item.currentOpacity || targetOpacity, targetOpacity, 0.25, 0.9);
+
+      item.mesh.position.x = item.currentX;
       item.mesh.position.y = Math.sin(t * 0.7 + item.index * 0.35) * 0.03;
-      item.mesh.position.z = -abs * Z_STEP + Math.sin(t * 0.9 + item.index) * 0.05;
-      item.mesh.rotation.y = -off * ANGLE;
-      item.mesh.scale.setScalar(scale);
-      item.mesh.material.opacity = abs <= 1 ? 1 : 0.7;
+      item.mesh.position.z = item.currentZ + Math.sin(t * 0.9 + item.index) * 0.05;
+      item.mesh.rotation.y = item.currentRotY;
+      item.mesh.scale.setScalar(item.currentScale);
+      item.mesh.material.opacity = item.currentOpacity;
     }
 
     const snapped = Math.round(current) % TOTAL;
