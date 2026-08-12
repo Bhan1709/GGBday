@@ -19,7 +19,6 @@ export function initPhotoCollage(photos, messageCard = null) {
 
   let W = container.clientWidth || 900;
   let H = container.clientHeight || 560;
-  // Detect mobile once using viewport width (container may not have layout yet)
   const IS_MOBILE = window.innerWidth < 768;
   const MOBILE_FACTOR = IS_MOBILE ? 1.75 : 1;
 
@@ -140,7 +139,6 @@ export function initPhotoCollage(photos, messageCard = null) {
     const margin = 18;
     const band = 58;
     const photoW = 520;
-    // Use a more photo-like aspect ratio (4:5 portrait)
     const photoH = Math.round(photoW * 1.25);
     const cw = photoW + margin * 2;
     const ch = photoH + margin * 2 + band;
@@ -150,24 +148,20 @@ export function initPhotoCollage(photos, messageCard = null) {
     const g = c.getContext('2d');
     g.scale(scale, scale);
 
-    // White polaroid base
     g.fillStyle = '#fdfbf8';
     g.fillRect(0, 0, cw, ch);
 
-    // Subtle paper texture
     for (let i = 0; i < 800; i++) {
       g.fillStyle = `rgba(204, 178, 160, ${0.02 + Math.random() * 0.03})`;
       g.fillRect(Math.random() * cw, Math.random() * ch, 1.5, 1.5);
     }
 
-    // Photo area with warm gradient background
     const grad = g.createLinearGradient(0, margin, 0, margin + photoH);
     grad.addColorStop(0, '#fff8f0');
     grad.addColorStop(1, '#ffeef5');
     g.fillStyle = grad;
     g.fillRect(margin, margin, photoW, photoH);
 
-    // Inner frame
     g.strokeStyle = 'rgba(244, 151, 170, 0.35)';
     g.lineWidth = 1.5;
     g.strokeRect(margin + 10, margin + 10, photoW - 20, photoH - 20);
@@ -175,17 +169,14 @@ export function initPhotoCollage(photos, messageCard = null) {
     g.textAlign = 'center';
     g.textBaseline = 'middle';
 
-    // Small decorative heart at top
     g.font = '28px serif';
     g.fillStyle = '#f497aa';
     g.fillText('💖', cw / 2, margin + 42);
 
-    // Heading
     g.fillStyle = '#c99aa2';
     g.font = 'italic 32px "Dancing Script", "Great Vibes", cursive';
     g.fillText(card.heading || 'For my baby, from my heart', cw / 2, margin + 80);
 
-    // Divider line
     g.strokeStyle = 'rgba(244, 151, 170, 0.4)';
     g.lineWidth = 1;
     g.beginPath();
@@ -193,7 +184,6 @@ export function initPhotoCollage(photos, messageCard = null) {
     g.lineTo(cw / 2 + 60, margin + 100);
     g.stroke();
 
-    // Body text
     const body = card.body || '';
     g.fillStyle = '#5a4a52';
     g.font = '28px "Cormorant Garamond", Georgia, serif';
@@ -205,12 +195,10 @@ export function initPhotoCollage(photos, messageCard = null) {
       y += lh;
     }
 
-    // Signature
     g.fillStyle = '#c99aa2';
     g.font = 'italic 30px "Great Vibes", "Dancing Script", cursive';
     g.fillText(card.signature || 'Yours forever and always', cw / 2, y + 24);
 
-    // Polaroid bottom label - matches photos exactly
     g.fillStyle = '#9c8a94';
     g.font = 'italic 30px "Dancing Script", "Great Vibes", cursive';
     g.fillText('♡  ∞', cw / 2, margin + photoH + band / 2);
@@ -254,7 +242,6 @@ export function initPhotoCollage(photos, messageCard = null) {
   }
 
   if (HAS_MESSAGE) {
-    // Use higher resolution on mobile for crispness
     const msgScale = MOBILE_FACTOR > 1 ? 2 : 1;
     const msgCanvas = makeMessagePolaroid(messageCard, msgScale);
     messageSrc = makeMessagePolaroid(messageCard, 2).toDataURL('image/png');
@@ -378,7 +365,7 @@ export function initPhotoCollage(photos, messageCard = null) {
     scheduleAuto();
     if (!moved) {
       const idx = pick(e.clientX, e.clientY);
-      if (idx >= 0 && idx === (Math.round(current) % TOTAL)) {
+      if (idx >= 0 && idx === (((Math.round(current) % TOTAL) + TOTAL) % TOTAL)) {
         openLightbox(idx);
       } else if (idx >= 0) {
         goTo(idx);
@@ -414,9 +401,12 @@ export function initPhotoCollage(photos, messageCard = null) {
   const clock = new THREE.Clock();
   let lastCounter = -1;
 
-  // Spring animation helper for smoother transitions
-  function springTowards(current, target, stiffness = 0.12, damping = 0.85) {
-    const diff = target - current;
+  function springTowards(current, target, stiffness = 0.12, damping = 0.85, wrapTotal = 0) {
+    let diff = target - current;
+    if (wrapTotal > 0) {
+      if (diff > wrapTotal / 2) diff -= wrapTotal;
+      if (diff < -wrapTotal / 2) diff += wrapTotal;
+    }
     return current + diff * stiffness * damping;
   }
 
@@ -424,19 +414,15 @@ export function initPhotoCollage(photos, messageCard = null) {
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
 
-    let diff = target - current;
-    if (diff > TOTAL / 2) diff -= TOTAL;
-    if (diff < -TOTAL / 2) diff += TOTAL;
-    // Spring-based smoothing for more natural feel
-    current = springTowards(current, target, 0.12, 0.88);
+    current = springTowards(current, target, 0.12, 0.88, TOTAL);
     if (Math.abs(target - current) < 0.005) current = target;
+    // Keep current in [0, TOTAL) range for consistent position calculations
+    current = ((current % TOTAL) + TOTAL) % TOTAL;
 
     for (const item of items) {
       const off = wrapOffset(item.index - current);
       const abs = Math.abs(off);
-      const isMessage = item.index === MESSAGE_INDEX;
-      // Message card only appears when centered; photos show within MAX_OFF range
-      const visible = isMessage ? abs === 0 : abs <= MAX_OFF;
+      const visible = abs <= MAX_OFF;
       item.mesh.visible = visible;
       if (!visible) continue;
 
@@ -446,7 +432,6 @@ export function initPhotoCollage(photos, messageCard = null) {
       const targetRotY = -off * ANGLE;
       const targetOpacity = abs <= 1 ? 1 : 0.7;
 
-      // Spring smoothing for per-card properties
       item.currentScale = springTowards(item.currentScale || targetScale, targetScale, 0.18, 0.88);
       item.currentX = springTowards(item.currentX || targetX, targetX, 0.18, 0.88);
       item.currentZ = springTowards(item.currentZ || targetZ, targetZ, 0.18, 0.88);
@@ -461,7 +446,7 @@ export function initPhotoCollage(photos, messageCard = null) {
       item.mesh.material.opacity = item.currentOpacity;
     }
 
-    const snapped = Math.round(current) % TOTAL;
+    const snapped = ((Math.round(current) % TOTAL) + TOTAL) % TOTAL;
     if (snapped !== lastCounter) {
       lastCounter = snapped;
       if (counterEl) counterEl.textContent = `${snapped + 1} / ${TOTAL}`;
