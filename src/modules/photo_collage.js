@@ -19,6 +19,9 @@ export function initPhotoCollage(photos, messageCard = null) {
 
   let W = container.clientWidth || 900;
   let H = container.clientHeight || 560;
+  // Detect mobile once using viewport width (container may not have layout yet)
+  const IS_MOBILE = window.innerWidth < 768;
+  const MOBILE_FACTOR = IS_MOBILE ? 1.75 : 1;
 
   let renderer;
   try {
@@ -194,7 +197,7 @@ export function initPhotoCollage(photos, messageCard = null) {
 
   const items = [];
   const raycastMeshes = [];
-  const CARD_W = 4.0;
+  const CARD_W = 4.0 * MOBILE_FACTOR;
 
   for (let i = 0; i < COUNT; i++) {
     const pc = makePolaroid(null, i);
@@ -399,7 +402,9 @@ export function initPhotoCollage(photos, messageCard = null) {
     for (const item of items) {
       const off = wrapOffset(item.index - current);
       const abs = Math.abs(off);
-      const visible = abs <= MAX_OFF;
+      const isMessage = item.index === MESSAGE_INDEX;
+      // Message card only appears when centered; photos show within MAX_OFF range
+      const visible = isMessage ? abs === 0 : abs <= MAX_OFF;
       item.mesh.visible = visible;
       if (!visible) continue;
 
@@ -415,7 +420,7 @@ export function initPhotoCollage(photos, messageCard = null) {
     const snapped = Math.round(current) % TOTAL;
     if (snapped !== lastCounter) {
       lastCounter = snapped;
-      if (counterEl) counterEl.textContent = `${snapped + 1} / ${COUNT}`;
+      if (counterEl) counterEl.textContent = `${snapped + 1} / ${TOTAL}`;
     }
 
     renderer.render(scene, camera);
