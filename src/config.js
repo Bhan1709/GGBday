@@ -1,16 +1,16 @@
 // Application Configuration
 export const CONFIG = {
   // Personal Details
-  fianceName: "My Fairytale Princess",
+  fianceName: "My Lovely Sky",
   partnerName: "Your Loving Fiancé",
-  notificationEmail: "your-email@example.com", // Set your email address here!
+  notificationEmail: "devilkbs1709@gmail.com", // Set your email address here!
   
   // Background Music (file in /public, served at root)
   musicFile: "Surili Akhiyon Wale Full (Video) - Veer_Salman Khan_Zarine Khan_Rahat Fateh Ali Khan.mp3",
   musicTrack: "Surili Akhiyon Wale 🌸",
   
   // Formspree / EmailJS Endpoint (Optional but recommended for direct email notifications)
-  emailEndpoint: "", 
+  emailEndpoint: "https://formspree.io/f/maewoznn", 
 
   // Birthday & Claim Settings
   birthdayDate: "August 13",

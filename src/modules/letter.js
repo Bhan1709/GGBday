@@ -3,6 +3,8 @@ import { triggerHeartConfetti } from './confetti.js';
 export function initLetter(letterConfig) {
   const envelopeContainer = document.getElementById('envelope-container');
   const waxSeal = document.getElementById('wax-seal');
+  const envelopeFlap = document.getElementById('envelope-flap');
+  const envelopeSlip = document.getElementById('envelope-slip');
   const openBtn = document.getElementById('open-letter-btn');
   const letterPaper = document.getElementById('letter-paper');
   const letterBodyContainer = document.getElementById('letter-body-content');
@@ -25,18 +27,73 @@ export function initLetter(letterConfig) {
 
   let isLetterOpened = false;
 
+  // Burst the wax seal into flying shards
+  function burstWaxSeal() {
+    if (!waxSeal) return;
+    const rect = waxSeal.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const shardColors = ['#ec4899', '#be185d', '#881337', '#f43f5e', '#9d174d'];
+    const frag = document.createDocumentFragment();
+
+    for (let i = 0; i < 14; i++) {
+      const shard = document.createElement('span');
+      shard.className = 'seal-shard';
+      const size = 7 + Math.random() * 15;
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 45 + Math.random() * 80;
+      shard.style.cssText = `
+        left: ${cx}px;
+        top: ${cy}px;
+        width: ${size}px;
+        height: ${size}px;
+        background: ${shardColors[i % shardColors.length]};
+        clip-path: polygon(
+          ${(Math.random() * 45 + 5).toFixed(1)}% 0,
+          100% ${(Math.random() * 45 + 5).toFixed(1)}%,
+          ${(Math.random() * 45 + 5).toFixed(1)}% 100%,
+          0 ${(Math.random() * 45 + 5).toFixed(1)}%
+        );
+        border-radius: 3px;
+        --dx: ${(Math.cos(angle) * dist).toFixed(1)}px;
+        --dy: ${(Math.sin(angle) * dist).toFixed(1)}px;
+        --rot: ${((Math.random() - 0.5) * 900).toFixed(0)}deg;
+      `;
+      frag.appendChild(shard);
+    }
+
+    document.body.appendChild(frag);
+    setTimeout(() => {
+      document.querySelectorAll('.seal-shard').forEach(s => s.remove());
+    }, 1000);
+  }
+
   function openLetter() {
     if (isLetterOpened) return;
     isLetterOpened = true;
 
-    // Open container
+    // Begin the unsealing sequence on the container
     envelopeContainer.classList.add('open');
     triggerHeartConfetti();
 
-    // Scroll letter into comfortable view
+    // 1. Wax seal cracks and shatters
+    burstWaxSeal();
+    waxSeal.classList.add('cracked');
+
+    // 2. Flap swings open
+    setTimeout(() => {
+      if (envelopeFlap) envelopeFlap.classList.add('open');
+    }, 450);
+
+    // 3. Letter slip slides up out of the envelope
+    setTimeout(() => {
+      if (envelopeSlip) envelopeSlip.classList.add('out');
+    }, 900);
+
+    // Scroll the letter into comfortable view
     setTimeout(() => {
       letterPaper.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 300);
+    }, 1500);
 
     // Populate & animate paragraphs with stagger
     if (letterBodyContainer && letterConfig?.paragraphs) {
@@ -51,16 +108,17 @@ export function initLetter(letterConfig) {
         setTimeout(() => {
           p.style.opacity = '1';
           p.style.transform = 'translateY(0)';
-        }, 600 + pIndex * 350);
+        }, 1500 + pIndex * 350);
       });
     }
 
-    // Launch floating petals inside the letter using Three.js
-    spawnLetterPetals();
+    // Launch floating petals inside the letter using Three.js once it is visible
+    setTimeout(spawnLetterPetals, 1650);
   }
 
   waxSeal.addEventListener('click', openLetter);
   if (openBtn) openBtn.addEventListener('click', openLetter);
+  if (envelopeFlap) envelopeFlap.addEventListener('click', openLetter);
 
   // ─── Three.js Floating Petals Canvas inside the Letter ─────────────────
   function spawnLetterPetals() {

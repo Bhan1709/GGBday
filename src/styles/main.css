@@ -6,7 +6,7 @@
    backdrop for luminosity contrast. Accent emerald for fairy sparkle.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Parisienne&family=Jost:wght@300;400;500;600&family=Dancing+Script:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Parisienne&family=Great+Vibes&family=Jost:wght@300;400;500;600&family=Dancing+Script:wght@600;700&display=swap');
 
 /* ─── DESIGN TOKENS ──────────────────────────────────────────────────────── */
 :root {
@@ -49,6 +49,7 @@
   /* Typography — curated romantic stack */
   --font-serif:   'Cormorant Garamond', 'Georgia', serif;
   --font-cursive: 'Parisienne', 'Great Vibes', cursive;
+  --font-title:   'Great Vibes', 'Parisienne', cursive;
   --font-script:  'Dancing Script', cursive;
   --font-sans:    'Jost', -apple-system, BlinkMacSystemFont, sans-serif;
 
@@ -162,85 +163,6 @@ body {
   border-color: var(--border-gold);
   box-shadow: var(--shadow-gold);
   transform: translateY(-3px);
-}
-
-/* ─── ENTRANCE MODAL ─────────────────────────────────────────────────────── */
-.entrance-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(10, 6, 18, 0.94);
-  backdrop-filter: blur(28px) saturate(1.2);
-  z-index: 999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  transition: opacity 0.7s var(--ease-spring);
-}
-
-.entrance-card {
-  max-width: 580px;
-  width: 100%;
-  text-align: center;
-  padding: 3.8rem 2.5rem;
-  border-radius: var(--radius-lg);
-  background: linear-gradient(145deg, rgba(35, 18, 52, 0.95) 0%, rgba(16, 9, 26, 0.98) 100%);
-  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.9), var(--shadow-gold);
-  border: 1px solid var(--border-gold);
-  position: relative;
-  overflow: hidden;
-}
-
-/* Subtle shimmer strip on top of entrance card */
-.entrance-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--gold-500), var(--rose-400), var(--gold-500), transparent);
-  opacity: 0.8;
-}
-
-.entrance-badge {
-  display: inline-block;
-  padding: 0.42rem 1.5rem;
-  background: rgba(255, 196, 77, 0.12);
-  border: 1px solid rgba(255, 196, 77, 0.38);
-  border-radius: var(--radius-full);
-  font-family: var(--font-sans);
-  font-size: 0.82rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--gold-300);
-  margin-bottom: 1.5rem;
-}
-
-.entrance-title {
-  font-family: var(--font-cursive);
-  font-size: clamp(2.8rem, 7vw, 4.2rem);
-  color: var(--gold-500);
-  line-height: 1.05;
-  margin-bottom: 1rem;
-  text-shadow: 0 0 30px rgba(255, 196, 77, 0.5), 0 0 60px rgba(255, 196, 77, 0.2);
-}
-
-.entrance-subtitle {
-  font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 1.1rem;
-  color: var(--text-muted);
-  margin-bottom: 2.4rem;
-  line-height: 1.7;
-}
-
-.entrance-btn {
-  font-size: 1.05rem;
-  padding: 1.05rem 2.8rem;
-  background: linear-gradient(135deg, var(--gold-500) 0%, var(--gold-700) 100%);
-  color: #1a0824;
-  font-weight: 600;
-  letter-spacing: 0.03em;
 }
 
 /* ─── SECTION HEADINGS ───────────────────────────────────────────────────── */

@@ -1,4 +1,6 @@
 import { triggerCelebrationConfetti } from './confetti.js';
+import { initGiftScene } from './gift_three.js';
+import { initClaimScene } from './claim_three.js';
 
 const LOCAL_STORAGE_KEY = 'birthday_giftcard_claims_v1';
 
@@ -8,19 +10,39 @@ export function initGiftCards(config) {
   const userEmail = config.notificationEmail || "your-email@example.com";
   const emailEndpoint = config.emailEndpoint || "";
 
-  const gridContainer = document.getElementById('coupons-grid');
-  const remainingBadge = document.getElementById('remaining-claims-count');
+  const stage = document.getElementById('giftcard-stage');
+  const remainingCount = document.getElementById('gift-remaining-count');
+  const progressDots = document.getElementById('gift-card-progress');
+  const claimsList = document.getElementById('claims-list');
+  const expiryEl = document.getElementById('gift-card-expiry');
+  const redeemBtn = document.getElementById('redeem-gift-btn');
   const claimModal = document.getElementById('claim-modal');
   const claimForm = document.getElementById('claim-form');
   const claimModalClose = document.getElementById('claim-modal-close');
   const activeCouponTitle = document.getElementById('active-coupon-title');
 
-  if (!gridContainer) return;
+  if (expiryEl) expiryEl.textContent = `Yours to Unwrap Until ${expiryDate}`;
 
-  // Load existing claims from LocalStorage
+  // Load existing claims from LocalStorage (keyed by request number 1..12)
   let claims = getSavedClaims();
-
   let activeCouponId = null;
+
+  // ─── Init the Three.js 3D gift box scene ──────────────────────────────────
+  let giftScene = null;
+  if (stage) {
+    giftScene = initGiftScene('gift-three-canvas', {
+      total: totalClaims,
+      claimedSet: new Set(Object.keys(claims).map(Number)),
+      onBoxClick: (index) => {
+        if (claims[index]) return;
+        activeCouponId = index;
+        openClaimModal();
+      }
+    });
+  }
+
+  // ─── Init the Three.js animated backdrop for the redeem form ──────────────
+  const claimScene = initClaimScene('claim-three-canvas');
 
   function getSavedClaims() {
     try {
@@ -39,80 +61,144 @@ export function initGiftCards(config) {
     }
   }
 
+  function getClaimedCount() {
+    return Object.keys(claims).length;
+  }
+
+  function getRemaining() {
+    return Math.max(0, totalClaims - getClaimedCount());
+  }
+
+  function bumpStat(el) {
+    if (!el) return;
+    el.classList.remove('bump');
+    void el.offsetWidth; // restart the animation
+    el.classList.add('bump');
+  }
+
   function updateRemainingCounter() {
-    const claimedCount = Object.keys(claims).length;
-    const remaining = Math.max(0, totalClaims - claimedCount);
-    if (remainingBadge) {
-      remainingBadge.textContent = remaining;
+    const remaining = getRemaining();
+
+    if (remainingCount && remainingCount.textContent !== String(remaining)) {
+      remainingCount.textContent = remaining;
+      bumpStat(remainingCount);
+    }
+
+    if (redeemBtn) {
+      const allClaimed = remaining === 0;
+      redeemBtn.disabled = allClaimed;
+      redeemBtn.textContent = allClaimed ? 'All Surprises Unwrapped 💖' : 'Unwrap a Surprise 💖';
     }
   }
 
-  function renderCoupons() {
-    updateRemainingCounter();
-    gridContainer.innerHTML = '';
+  // ─── 12 Request Dots on the card ──────────────────────────────────────────
+  const dotEls = new Map();
+
+  function renderDots() {
+    if (!progressDots) return;
+    progressDots.innerHTML = '';
 
     for (let i = 1; i <= totalClaims; i++) {
-      const isClaimed = !!claims[i];
-      const claimData = claims[i];
+      const dot = document.createElement('span');
+      dot.className = 'gift-card-dot';
+      dot.textContent = i;
+      dot.style.animationDelay = `${0.1 + i * 0.06}s`;
+      dot.title = `Surprise #${i}`;
+      if (claims[i]) dot.classList.add('claimed');
 
-      const card = document.createElement('div');
-      card.className = `coupon-card ${isClaimed ? 'claimed' : ''}`;
-      
-      card.innerHTML = `
-        <div class="coupon-header">
-          <span class="coupon-num">Gift Card #${i}</span>
-          <span class="coupon-status-badge ${isClaimed ? 'claimed' : 'available'}">
-            ${isClaimed ? '✓ Claimed' : '🎁 Available'}
-          </span>
-        </div>
-        <div class="coupon-title">${isClaimed ? claimData.itemName : `Transfer Request #${i}`}</div>
-        <div class="coupon-desc">
-          ${isClaimed 
-            ? `Requested: <strong>$${claimData.amount}</strong>` 
-            : `Valid for any gift or money transfer wish until ${expiryDate}.`}
-        </div>
-        
-        ${isClaimed ? `
-          <div class="coupon-claimed-details">
-            📅 Redeemed: ${claimData.date}<br/>
-            💬 Note: "${claimData.note || 'No note'}"
-          </div>
-        ` : `
-          <button class="btn-primary btn-gold redeem-btn" data-id="${i}" style="margin-top: auto;">
-            Redeem Transfer 💖
-          </button>
-        `}
-      `;
-
-      gridContainer.appendChild(card);
-    }
-
-    // Attach click handlers to redeem buttons
-    gridContainer.querySelectorAll('.redeem-btn').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        const id = parseInt(e.target.getAttribute('data-id'), 10);
-        openClaimModal(id);
+      dot.addEventListener('click', () => {
+        if (!claims[i]) {
+          activeCouponId = i;
+          openClaimModal();
+        }
       });
-    });
+
+      progressDots.appendChild(dot);
+      dotEls.set(i, dot);
+    }
   }
 
-  function openClaimModal(couponId) {
-    activeCouponId = couponId;
+  function flashDot(index) {
+    const dot = dotEls.get(index);
+    if (!dot) return;
+    const claim = claims[index];
+    if (claim) dot.title = claim.amount ? `${claim.itemName} · ₹${claim.amount}` : claim.itemName;
+    dot.classList.add('claimed', 'just-claimed');
+    setTimeout(() => dot.classList.remove('just-claimed'), 1100);
+  }
+
+  // ─── Claims Log Rows (only revealed once she makes her first request) ─────
+  const rowEls = new Map();
+  let listRendered = false;
+
+  function renderList() {
+    if (!claimsList) return;
+    claimsList.innerHTML = '';
+
+    for (let i = 1; i <= totalClaims; i++) {
+      const row = document.createElement('div');
+      row.className = 'claim-row';
+      row.dataset.index = String(i);
+      row.style.animationDelay = `${0.15 + i * 0.06}s`;
+      claimsList.appendChild(row);
+      rowEls.set(i, row);
+      fillRow(row, i);
+    }
+  }
+
+  function fillRow(row, index) {
+    const claim = claims[index];
+
+    if (claim) {
+      row.classList.add('claimed');
+      const meta = [claim.amount ? `₹${escapeHtml(claim.amount)}` : '', escapeHtml(claim.date), claim.note ? `“${escapeHtml(claim.note)}”` : '']
+        .filter(Boolean)
+        .join(' · ');
+      row.innerHTML = `
+        <span class="claim-row-num">#${index}</span>
+        <div class="claim-row-info">
+          <div class="claim-row-title">${escapeHtml(claim.itemName)}</div>
+          <div class="claim-row-meta">${meta}</div>
+        </div>
+        <span class="claim-row-status claimed">✓ Unwrapped</span>
+      `;
+    } else {
+      row.innerHTML = `
+        <span class="claim-row-num">#${index}</span>
+        <div class="claim-row-info">
+          <div class="claim-row-title available">Surprise #${index}</div>
+          <div class="claim-row-meta">Waiting for your heart's desire</div>
+        </div>
+        <span class="claim-row-status available">🎁 Available</span>
+      `;
+    }
+  }
+
+  function refreshRow(index) {
+    const row = rowEls.get(index);
+    if (row) fillRow(row, index);
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = String(str ?? '');
+    return div.innerHTML;
+  }
+
+  // ─── Claim Modal ──────────────────────────────────────────────────────────
+  function openClaimModal() {
+    if (getRemaining() === 0) return;
     if (activeCouponTitle) {
-      activeCouponTitle.textContent = `Redeem Gift Card #${couponId}`;
+      activeCouponTitle.textContent = `Unwrap Surprise #${activeCouponId}`;
     }
-    if (claimModal) {
-      claimModal.classList.add('active');
-    }
+    if (claimModal) claimModal.classList.add('active');
+    if (claimScene) claimScene.setActive(true);
   }
 
   function closeClaimModal() {
-    if (claimModal) {
-      claimModal.classList.remove('active');
-    }
-    if (claimForm) {
-      claimForm.reset();
-    }
+    if (claimModal) claimModal.classList.remove('active');
+    if (claimScene) claimScene.setActive(false);
+    if (claimForm) claimForm.reset();
     activeCouponId = null;
   }
 
@@ -126,23 +212,26 @@ export function initGiftCards(config) {
     });
   }
 
-  // Handle Claim Submission
+  // ─── Handle Claim Submission ──────────────────────────────────────────────
   if (claimForm) {
     claimForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      if (!activeCouponId) return;
+      if (!activeCouponId || claims[activeCouponId]) return;
 
       const itemName = document.getElementById('claim-item-name').value.trim();
       const amount = document.getElementById('claim-amount').value.trim();
       const note = document.getElementById('claim-note').value.trim();
 
-      if (!itemName || !amount) return;
+      // A gift, direct money, or both — just need at least one.
+      if (!itemName && !amount) return;
+
+      const giftName = itemName || 'Pocket money surprise 💸';
 
       const claimRecord = {
         couponId: activeCouponId,
-        itemName: itemName,
-        amount: amount,
+        itemName: giftName,
+        amount: amount || '',
         note: note,
         date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
       };
@@ -151,34 +240,81 @@ export function initGiftCards(config) {
       claims[activeCouponId] = claimRecord;
       saveClaims(claims);
 
-      // Trigger Confetti Celebration!
+      // Trigger Celebration Confetti!
       triggerCelebrationConfetti();
 
-      // Dispatch Email or generate fallback links
+      // Animate the 3D gift box popping gold
+      if (giftScene) giftScene.markClaimed(activeCouponId);
+
+      // Update card dots and remaining counter
+      flashDot(activeCouponId);
+      updateRemainingCounter();
+
+      // Reveal the claims log on her first request, otherwise update in place
+      if (!listRendered) {
+        renderList();
+        listRendered = true;
+        const firstRow = rowEls.get(activeCouponId);
+        if (firstRow) {
+          firstRow.style.animationDelay = '0s';
+          firstRow.classList.add('just-claimed');
+          setTimeout(() => firstRow.classList.remove('just-claimed'), 1400);
+        }
+      } else {
+        refreshRow(activeCouponId);
+      }
+
+      // Dispatch email notification, then celebrate
       await sendNotificationEmail(claimRecord, userEmail, emailEndpoint);
+      if (giftScene && giftScene.showNotification) {
+        giftScene.showNotification('Surprise Unwrapped! 💖', `Surprise #${activeCouponId} · ${claimRecord.itemName}`);
+      }
 
       closeClaimModal();
-      renderCoupons();
     });
   }
 
-  renderCoupons();
+  // ─── Wire up the single Redeem button ────────────────────────────────────
+  if (redeemBtn) {
+    redeemBtn.addEventListener('click', () => {
+      if (getRemaining() === 0) return;
+      // Auto-assign the next available request number
+      for (let i = 1; i <= totalClaims; i++) {
+        if (!claims[i]) {
+          activeCouponId = i;
+          break;
+        }
+      }
+      if (activeCouponId) openClaimModal();
+    });
+  }
+
+  // ─── Init: dots, remaining counter, and log (only if claims already exist) ─
+  renderDots();
+  updateRemainingCounter();
+  if (getClaimedCount() > 0) {
+    renderList();
+    listRendered = true;
+  }
 }
 
 // Send Notification via Formspree/EmailJS or fallback Mailto / WhatsApp link
 async function sendNotificationEmail(claim, userEmail, endpoint) {
-  const subject = `💖 Birthday Gift Request #${claim.couponId}: ${claim.itemName} ($${claim.amount})`;
-  const body = `Hi handsome! Your sweetheart just redeemed Birthday Gift Card #${claim.couponId}!\n\n` +
-               `🎁 Requested Item: ${claim.itemName}\n` +
-               `💵 Transfer Amount: $${claim.amount}\n` +
+  const amountStr = claim.amount ? ` (₹${claim.amount})` : '';
+  const subject = `💖 Birthday Surprise #${claim.couponId}: ${claim.itemName}${amountStr}`;
+  const body = `Hi handsome! Your sweetheart just unwrapped Birthday Surprise #${claim.couponId}!\n\n` +
+               `🎁 Surprise: ${claim.itemName}\n` +
+               (claim.amount ? `💵 Amount: ₹${claim.amount}\n` : '') +
                `📅 Date: ${claim.date}\n` +
                `💬 Note: "${claim.note || 'None'}"\n\n` +
-               `Please process the transfer for her! ❤️`;
+               `Please make this wish come true for her! ❤️`;
 
-  // 1. If custom endpoint (e.g. Formspree/FormSubmit) is provided, send HTTP POST
+  // 1. If a form endpoint (Formspree/Google Apps Script) is configured, send
+  //    the HTTP POST. If it succeeds, the request is recorded — no popup needed.
+  let notified = false;
   if (endpoint && endpoint.startsWith('http')) {
     try {
-      await fetch(endpoint, {
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({
@@ -189,20 +325,24 @@ async function sendNotificationEmail(claim, userEmail, endpoint) {
           email: userEmail
         })
       });
+      notified = res.ok;
     } catch (err) {
       console.warn("API Email delivery failed, falling back to mailto", err);
     }
   }
 
-  // 2. Automatically prompt open mailto link or fallback notification window
+  // Endpoint recorded the request — nothing else to do.
+  if (notified) return;
+
+  // 2. Fallback: prompt open mailto link if no endpoint was configured.
   const encodedSubject = encodeURIComponent(subject);
   const encodedBody = encodeURIComponent(body);
   const mailtoUrl = `mailto:${userEmail}?subject=${encodedSubject}&body=${encodedBody}`;
-  
+
   // Prompt option for immediate email or WhatsApp notification dispatch
   const sendEmail = window.confirm(
-    `Gift Card #${claim.couponId} Redeemed Successfully! 🎉\n\n` +
-    `Click OK to open your email client to send the transfer request notification to ${userEmail} now!`
+    `Surprise #${claim.couponId} unwrapped! 🎉\n\n` +
+    `Click OK to open your email client and send this wish to ${userEmail} now!`
   );
 
   if (sendEmail) {

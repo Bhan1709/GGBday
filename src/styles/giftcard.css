@@ -1,146 +1,317 @@
-/* 12-Transfer Birthday Gift Card System Styles */
+/* ─── Single Gift Card · 12 Transfer Requests ───────────────────────────── */
 .giftcard-section {
   padding: 4rem 1rem;
   margin-bottom: 4rem;
 }
 
-.claims-counter-card {
+/* ─── Three.js 3D Gift Box Stage ─────────────────────────────────────────── */
+.giftcard-stage {
+  position: relative;
+  width: 100%;
+  max-width: 760px;
+  height: 330px;
+  margin: 0 auto -70px;
+  z-index: 1;
+  cursor: default;
+}
+
+.giftcard-stage canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ─── Single Luxury Gift Card ────────────────────────────────────────────── */
+.gift-main-card {
+  position: relative;
+  width: min(620px, 94%);
+  margin: 0 auto;
+  padding: 2.2rem 2.4rem 2rem;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg,
+    #2b1640 0%,
+    #4a2459 35%,
+    #6d2f56 70%,
+    #2b1038 100%);
+  border: 1px solid var(--border-gold);
+  box-shadow:
+    0 40px 90px rgba(0, 0, 0, 0.6),
+    0 0 60px rgba(255, 196, 77, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+  z-index: 2;
+  transform-style: preserve-3d;
+}
+
+/* Sweeping shine across the card face */
+.gift-main-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.16) 45%,
+    rgba(255, 255, 255, 0.04) 55%,
+    transparent 70%);
+  transform: translateX(-120%);
+  animation: card-shine 7s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes card-shine {
+  0%, 55% { transform: translateX(-120%); }
+  85%, 100% { transform: translateX(120%); }
+}
+
+.gift-card-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 2rem 2.5rem;
-  background: linear-gradient(135deg, rgba(243, 198, 114, 0.12) 0%, rgba(255, 94, 142, 0.1) 100%);
-  border: 1px solid var(--border-gold);
-  border-radius: var(--radius-md);
-  margin-bottom: 3rem;
-  box-shadow: var(--shadow-gold);
+  margin-bottom: 1.8rem;
 }
 
-@media (max-width: 640px) {
-  .claims-counter-card {
-    flex-direction: column;
-    text-align: center;
-    gap: 1rem;
-  }
-}
-
-.claims-counter-title {
+.gift-card-brand {
   font-family: var(--font-serif);
-  font-size: 1.4rem;
-  color: var(--text-gold);
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  color: var(--gold-300);
 }
 
-.claims-counter-subtitle {
-  font-size: 0.9rem;
-  color: var(--text-muted);
+.gift-card-chip {
+  width: 42px;
+  height: 30px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #ffd97a, #b8860b);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6), 0 2px 8px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5c3d00;
+  font-size: 1rem;
 }
 
-.claims-badge-num {
-  font-family: var(--font-serif);
-  font-size: 3rem;
-  font-weight: 700;
-  color: var(--accent-gold);
-  line-height: 1;
-  text-shadow: 0 0 20px rgba(243, 198, 114, 0.4);
+.gift-card-amount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.6rem;
+  text-align: center;
 }
 
-/* Coupon Cards Grid */
-.coupons-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 1.8rem;
-}
-
-.coupon-card {
-  background: linear-gradient(135deg, rgba(40, 25, 50, 0.8) 0%, rgba(20, 12, 28, 0.9) 100%);
-  border: 1px dashed var(--border-gold);
-  border-radius: var(--radius-md);
-  padding: 1.8rem 1.5rem;
-  position: relative;
-  overflow: hidden;
-  transition: transform var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+.gift-stat {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: 220px;
-}
-
-.coupon-card:hover {
-  transform: translateY(-6px);
-  border-style: solid;
-  border-color: var(--accent-gold);
-  box-shadow: var(--shadow-gold);
-}
-
-.coupon-card.claimed {
-  border-color: rgba(255, 255, 255, 0.15);
-  background: rgba(20, 15, 25, 0.4);
-  opacity: 0.7;
-}
-
-.coupon-card.claimed:hover {
-  transform: none;
-  box-shadow: none;
-}
-
-.coupon-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  gap: 0.2rem;
 }
 
-.coupon-num {
+.gift-stat-num {
   font-family: var(--font-serif);
-  font-size: 1.2rem;
+  font-size: clamp(3.4rem, 8vw, 4.4rem);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent-gold);
+  text-shadow: 0 0 30px rgba(255, 196, 77, 0.55), 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.gift-stat-label {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--rose-400);
+}
+
+.gift-stat-num.bump {
+  animation: stat-bump 0.55s var(--ease-spring);
+}
+
+@keyframes stat-bump {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.35); text-shadow: 0 0 44px rgba(255, 196, 77, 0.95); }
+  100% { transform: scale(1); }
+}
+
+/* ─── 12 Request Progress Dots ───────────────────────────────────────────── */
+.gift-card-progress {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 2rem;
+  align-items: center;
+}
+
+.gift-card-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1.5px dashed rgba(255, 196, 77, 0.55);
+  color: var(--gold-300);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+  opacity: 0;
+  transform: scale(0.4);
+  animation: dot-pop 0.5s var(--ease-spring) forwards;
+}
+
+.gift-card-dot:hover {
+  transform: scale(1.15);
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 14px rgba(255, 196, 77, 0.45);
+}
+
+.gift-card-dot.claimed {
+  background: linear-gradient(135deg, #ffd97a, #f5a623);
+  border: 1.5px solid #ffdf9e;
+  color: #3d2600;
+  box-shadow: 0 0 16px rgba(255, 196, 77, 0.55);
+  cursor: default;
+}
+
+.gift-card-dot.claimed:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(255, 196, 77, 0.7);
+}
+
+.gift-card-dot.just-claimed {
+  animation: dot-claim 0.9s var(--ease-spring);
+}
+
+@keyframes dot-pop {
+  from { opacity: 0; transform: scale(0.4); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes dot-claim {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.6); box-shadow: 0 0 30px rgba(255, 196, 77, 0.9); }
+  100% { transform: scale(1); }
+}
+
+/* ─── Card Footer ────────────────────────────────────────────────────────── */
+.gift-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.gift-card-expiry {
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.gift-card-footer .btn-primary {
+  flex-shrink: 0;
+}
+
+/* ─── Claims Log ─────────────────────────────────────────────────────────── */
+.claims-list {
+  max-width: 760px;
+  margin: 2.5rem auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.claim-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1.3rem;
+  background: linear-gradient(135deg, rgba(40, 25, 50, 0.65) 0%, rgba(20, 12, 28, 0.75) 100%);
+  border: 1px solid rgba(255, 196, 77, 0.16);
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transform: translateY(14px);
+  animation: claim-row-in 0.6s var(--ease-spring) forwards;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.claim-row.claimed {
+  border-color: rgba(255, 196, 77, 0.45);
+  box-shadow: 0 4px 20px rgba(255, 196, 77, 0.08);
+}
+
+@keyframes claim-row-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.claim-row.just-claimed {
+  animation: row-claim-flash 1.2s var(--ease-spring);
+}
+
+@keyframes row-claim-flash {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.03); box-shadow: 0 0 30px rgba(255, 196, 77, 0.55); }
+  100% { transform: scale(1); }
+}
+
+.claim-row-num {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
   font-weight: 700;
   color: var(--accent-gold);
+  min-width: 3rem;
 }
 
-.coupon-status-badge {
-  font-size: 0.75rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 600;
+.claim-row-info {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
 }
 
-.coupon-status-badge.available {
-  background: rgba(40, 167, 69, 0.2);
-  color: #28a745;
-  border: 1px solid rgba(40, 167, 69, 0.4);
-}
-
-.coupon-status-badge.claimed {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--text-muted);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.coupon-title {
-  font-family: var(--font-serif);
-  font-size: 1.25rem;
+.claim-row-title {
+  font-size: 0.95rem;
   color: var(--text-main);
-  margin-bottom: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.coupon-desc {
-  font-size: 0.85rem;
+.claim-row-title.available {
   color: var(--text-muted);
-  margin-bottom: 1.5rem;
+  font-style: italic;
 }
 
-.coupon-claimed-details {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 0.75rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.8rem;
-  color: var(--text-gold);
-  margin-top: auto;
+.claim-row-meta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
 }
 
-/* Claim Form Modal */
+.claim-row-status {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.28rem 0.85rem;
+  border-radius: var(--radius-full);
+}
+
+.claim-row-status.available {
+  background: rgba(255, 196, 77, 0.1);
+  color: var(--gold-300);
+  border: 1px solid rgba(255, 196, 77, 0.35);
+}
+
+.claim-row-status.claimed {
+  background: rgba(255, 196, 77, 0.18);
+  color: #ffd97a;
+  border: 1px solid rgba(255, 196, 77, 0.5);
+}
+
+/* ─── Claim Form Modal (shared) ──────────────────────────────────────────── */
 .claim-modal {
   position: fixed;
   top: 0;
@@ -165,7 +336,7 @@
 }
 
 .claim-modal-box {
-  background: var(--bg-card);
+  background: radial-gradient(120% 100% at 50% 0%, rgba(62, 32, 82, 0.55) 0%, rgba(22, 12, 36, 0.96) 55%);
   border: 1px solid var(--border-gold);
   border-radius: var(--radius-md);
   max-width: 520px;
@@ -173,6 +344,22 @@
   padding: 2.5rem 2rem;
   box-shadow: var(--shadow-card), var(--shadow-gold);
   position: relative;
+  overflow: hidden;
+}
+
+/* Three.js animated backdrop inside the form modal */
+.claim-modal-box canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.claim-modal-box > *:not(canvas) {
+  position: relative;
+  z-index: 1;
 }
 
 .claim-form {
@@ -195,6 +382,13 @@
   font-weight: 500;
 }
 
+.form-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 0.15rem;
+}
+
 .form-control {
   width: 100%;
   padding: 0.8rem 1rem;
@@ -215,4 +409,31 @@
 textarea.form-control {
   resize: vertical;
   min-height: 90px;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .giftcard-stage {
+    height: 260px;
+    margin-bottom: -60px;
+  }
+
+  .gift-main-card {
+    padding: 1.6rem 1.4rem 1.5rem;
+  }
+
+  .gift-card-progress {
+    gap: 0.45rem;
+  }
+
+  .gift-card-dot {
+    width: 26px;
+    height: 26px;
+  }
+
+  .gift-card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
 }

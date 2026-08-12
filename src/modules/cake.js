@@ -23,7 +23,7 @@ export async function initCake() {
     if (blowBtn && wishReveal) {
       blowBtn.addEventListener('click', () => {
         wishReveal.classList.add('active');
-        blowBtn.textContent = '🎂 Birthday Wishes Granted!';
+        blowBtn.textContent = '🎂 Your Wish Is Sealed With Love! ✨';
         blowBtn.disabled = true;
       });
     }
@@ -647,7 +647,7 @@ try {
         triggerCelebrationConfetti();
         wishReveal?.classList.add('active');
         if (blowBtn) {
-          blowBtn.textContent = '🎂 Birthday Wishes Granted! ✨';
+          blowBtn.textContent = '🎂 Your Wish Is Sealed With Love! ✨';
           blowBtn.disabled = true;
           blowBtn.style.opacity = '0.7';
         }
