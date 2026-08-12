@@ -94,7 +94,7 @@
 }
 
 .wish-reveal-box.active {
-  max-height: 420px;
+  max-height: 1000px;
   margin-top: 2rem;
   padding: 2rem 2.5rem;
   opacity: 1;
@@ -123,4 +123,11 @@
   #cake-three-container {
     height: 340px;
   }
+}
+
+/* ─── Mobile Typography Boost ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .cake-hint { font-size: 1.85rem; }
+  .wish-title { font-size: 2.8rem; }
+  .wish-body { font-size: 1.35rem; line-height: 1.85; }
 }

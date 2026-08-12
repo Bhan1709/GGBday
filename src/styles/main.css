@@ -164,6 +164,24 @@ body {
   }
 }
 
+/* ─── Mobile Typography Boost ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  html { font-size: 105%; } /* Global base bump */
+
+  /* Section headings */
+  .section-subtitle { font-size: clamp(2.2rem, 5vw, 3rem); }
+  .section-title { font-size: clamp(2.4rem, 5.5vw, 3.8rem); }
+
+  /* Buttons */
+  .btn-primary { font-size: 1.05rem; padding: 1.05rem 2.8rem; }
+
+  /* Glass cards */
+  .glass-card { font-size: 1.05rem; }
+
+  /* General body text inside sections */
+  section p { font-size: 1.05rem; line-height: 1.8; }
+}
+
 /* ─── GLASSMORPHISM PANELS ───────────────────────────────────────────────── */
 .glass-panel {
   background: var(--bg-card);

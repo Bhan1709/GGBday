@@ -440,8 +440,8 @@
   }
 
   .letter-body {
-    font-size: 1.4rem;
-    line-height: 2.3;
+    font-size: 1.6rem;
+    line-height: 2.4;
   }
 
   .letter-body p {
@@ -450,18 +450,18 @@
   }
 
   .letter-body p:first-child {
-    font-size: 1.55rem;
+    font-size: 1.8rem;
   }
 
   .letter-title {
-    font-size: 2.6rem;
+    font-size: 3rem;
   }
 
   .letter-signature {
-    font-size: 2.8rem;
+    font-size: 3.2rem;
   }
 
   .letter-closing {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
   }
 }

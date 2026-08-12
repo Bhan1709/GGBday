@@ -187,3 +187,10 @@
   color: #fff;
   box-shadow: 0 6px 20px rgba(244, 151, 170, 0.2);
 }
+
+/* ─── Mobile Typography Boost ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .hero-title-main { font-size: clamp(3rem, 7vw, 5.5rem); }
+  .hero-subtitle { font-size: clamp(1.45rem, 3.2vw, 1.75rem); line-height: 1.85; }
+  .quick-nav-item { font-size: 1rem; padding: 0.7rem 1.5rem; }
+}

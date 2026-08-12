@@ -109,6 +109,12 @@
   }
 }
 
+/* ─── Mobile Typography Boost ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .collage-hint { font-size: 1.85rem; }
+  .collage-counter { font-size: 1.5rem; }
+}
+
 /* ── Photo Lightbox (click to enlarge) ─────────────────────────────────── */
 .photo-lightbox {
   position: fixed;

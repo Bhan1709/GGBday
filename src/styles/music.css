@@ -132,3 +132,9 @@
     height: 100%;
   }
 }
+
+/* ── Tablet: slightly larger text when full bar is visible ─────────────── */
+@media (min-width: 601px) and (max-width: 768px) {
+  .music-track-name { font-size: 1rem; }
+  .music-status-text { font-size: 0.85rem; }
+}
