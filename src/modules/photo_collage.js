@@ -1,4 +1,4 @@
-export function initPhotoCollage(photos) {
+export function initPhotoCollage(photos, messageCard = null) {
   const container = document.getElementById('photo-collage-container');
   const prevBtn = document.getElementById('collage-prev-btn');
   const nextBtn = document.getElementById('collage-next-btn');
@@ -13,6 +13,9 @@ export function initPhotoCollage(photos) {
   const photosArr = Array.isArray(photos) ? photos : [];
   const COUNT = photosArr.length;
   if (!COUNT) return;
+  const HAS_MESSAGE = !!messageCard && !!messageCard.body;
+  const TOTAL = COUNT + (HAS_MESSAGE ? 1 : 0);
+  const MESSAGE_INDEX = COUNT;
 
   let W = container.clientWidth || 900;
   let H = container.clientHeight || 560;
@@ -46,15 +49,16 @@ export function initPhotoCollage(photos) {
   let paused = false;
   let autoTimer = null;
   let lightboxIndex = -1;
+  let messageSrc = null;
 
   function wrapOffset(d) {
-    if (d > COUNT / 2) d -= COUNT;
-    if (d < -COUNT / 2) d += COUNT;
+    if (d > TOTAL / 2) d -= TOTAL;
+    if (d < -TOTAL / 2) d += TOTAL;
     return d;
   }
 
   function goTo(next) {
-    target = ((next % COUNT) + COUNT) % COUNT;
+    target = ((next % TOTAL) + TOTAL) % TOTAL;
     scheduleAuto();
   }
 
@@ -112,6 +116,82 @@ export function initPhotoCollage(photos) {
     return c;
   }
 
+  function wrapCanvasText(ctx, text, maxWidth) {
+    const words = text.split(' ');
+    const lines = [];
+    let line = '';
+    for (const word of words) {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > maxWidth && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+
+  function makeMessagePolaroid(card, scale = 1) {
+    const margin = 18;
+    const band = 58;
+    const photoW = 520;
+    const photoH = 620;
+    const cw = photoW + margin * 2;
+    const ch = photoH + margin * 2 + band;
+    const c = document.createElement('canvas');
+    c.width = cw * scale;
+    c.height = ch * scale;
+    const g = c.getContext('2d');
+    g.scale(scale, scale);
+
+    g.fillStyle = '#fdfbf8';
+    g.fillRect(0, 0, cw, ch);
+
+    const grad = g.createLinearGradient(0, margin, 0, margin + photoH);
+    grad.addColorStop(0, '#fff6f8');
+    grad.addColorStop(1, '#ffe9ef');
+    g.fillStyle = grad;
+    g.fillRect(margin, margin, photoW, photoH);
+
+    g.strokeStyle = 'rgba(244, 151, 170, 0.5)';
+    g.lineWidth = 2;
+    g.strokeRect(margin + 14, margin + 14, photoW - 28, photoH - 28);
+
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+
+    g.fillStyle = '#c99aa2';
+    g.font = 'italic 34px "Dancing Script", "Great Vibes", cursive';
+    g.fillText(card.heading || 'For my baby, from my heart', cw / 2, margin + 56);
+
+    g.font = '30px serif';
+    g.fillStyle = '#f497aa';
+    g.fillText('💖', cw / 2, margin + 100);
+
+    const body = card.body || '';
+    g.fillStyle = '#6d5a63';
+    g.font = '30px "Cormorant Garamond", Georgia, serif';
+    const lines = wrapCanvasText(g, body, photoW - 92);
+    let y = margin + 168;
+    const lh = 42;
+    for (const line of lines) {
+      g.fillText(line, cw / 2, y);
+      y += lh;
+    }
+
+    g.fillStyle = '#c99aa2';
+    g.font = 'italic 34px "Great Vibes", "Dancing Script", cursive';
+    g.fillText(card.signature || 'Yours forever and always', cw / 2, y + 8);
+
+    g.fillStyle = '#9c8a94';
+    g.font = 'italic 30px "Dancing Script", "Great Vibes", cursive';
+    g.fillText('♡  ∞', cw / 2, margin + photoH + band / 2);
+
+    return c;
+  }
+
   const items = [];
   const raycastMeshes = [];
   const CARD_W = 4.0;
@@ -145,6 +225,23 @@ export function initPhotoCollage(photos) {
       item.mesh.geometry = new THREE.PlaneGeometry(CARD_W, nh);
     };
     img.src = photosArr[i];
+  }
+
+  if (HAS_MESSAGE) {
+    const msgCanvas = makeMessagePolaroid(messageCard);
+    messageSrc = makeMessagePolaroid(messageCard, 2).toDataURL('image/png');
+    const msgTex = new THREE.CanvasTexture(msgCanvas);
+    msgTex.encoding = THREE.sRGBEncoding;
+    msgTex.anisotropy = 8;
+    const msgCardH = CARD_W * (msgCanvas.height / msgCanvas.width);
+    const msgMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(CARD_W, msgCardH),
+      new THREE.MeshBasicMaterial({ map: msgTex, transparent: true, side: THREE.DoubleSide })
+    );
+    msgMesh.userData.index = MESSAGE_INDEX;
+    group.add(msgMesh);
+    raycastMeshes.push(msgMesh);
+    items.push({ index: MESSAGE_INDEX, mesh: msgMesh, tex: msgTex });
   }
 
   function fitZ() {
@@ -183,8 +280,9 @@ export function initPhotoCollage(photos) {
   }
 
   function showLightbox(idx) {
-    lightboxIndex = ((idx % COUNT) + COUNT) % COUNT;
-    lightboxImg.src = originalSrc(lightboxIndex);
+    idx = ((idx % TOTAL) + TOTAL) % TOTAL;
+    lightboxIndex = idx;
+    lightboxImg.src = idx === MESSAGE_INDEX ? messageSrc : originalSrc(idx);
   }
 
   function openLightbox(idx) {
@@ -237,7 +335,7 @@ export function initPhotoCollage(photos) {
       if (Math.abs(dx) > 5 || Math.abs(dy) > 5) moved = true;
       if (Math.abs(dx) > Math.abs(dy)) {
         const t = startTarget - Math.round(dx / 110);
-        target = ((t % COUNT) + COUNT) % COUNT;
+        target = ((t % TOTAL) + TOTAL) % TOTAL;
       }
       return;
     }
@@ -251,7 +349,7 @@ export function initPhotoCollage(photos) {
     scheduleAuto();
     if (!moved) {
       const idx = pick(e.clientX, e.clientY);
-      if (idx >= 0 && idx === (Math.round(current) % COUNT)) {
+      if (idx >= 0 && idx === (Math.round(current) % TOTAL)) {
         openLightbox(idx);
       } else if (idx >= 0) {
         goTo(idx);
@@ -292,8 +390,8 @@ export function initPhotoCollage(photos) {
     const t = clock.getElapsedTime();
 
     let diff = target - current;
-    if (diff > COUNT / 2) diff -= COUNT;
-    if (diff < -COUNT / 2) diff += COUNT;
+    if (diff > TOTAL / 2) diff -= TOTAL;
+    if (diff < -TOTAL / 2) diff += TOTAL;
     current += diff * 0.09;
     if (Math.abs(diff) < 0.01) current = target;
 
@@ -313,7 +411,7 @@ export function initPhotoCollage(photos) {
       item.mesh.material.opacity = abs <= 1 ? 1 : 0.85;
     }
 
-    const snapped = Math.round(current) % COUNT;
+    const snapped = Math.round(current) % TOTAL;
     if (snapped !== lastCounter) {
       lastCounter = snapped;
       if (counterEl) counterEl.textContent = `${snapped + 1} / ${COUNT}`;

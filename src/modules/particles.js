@@ -15,6 +15,12 @@ export function initParticles(canvasId) {
   const particles = [];
   const particleCount = 55;
 
+  // Ramp-up: fewer particles on load, reaching full density over time.
+  const RAMP_START = 0.08;
+  const RAMP_TIME_MS = 8000;
+  const RAMP_FADE = 8;
+  const loadTime = performance.now();
+
   class FairyParticle {
     constructor() {
       this.reset();
@@ -46,12 +52,12 @@ export function initParticles(canvasId) {
       }
     }
 
-    draw() {
+    draw(fade = 1) {
       ctx.save();
       ctx.translate(this.x, this.y);
       
       // Glowing pulse alpha
-      const currentAlpha = 0.3 + Math.abs(Math.sin(this.pulse)) * 0.6;
+      const currentAlpha = (0.3 + Math.abs(Math.sin(this.pulse)) * 0.6) * fade;
       ctx.globalAlpha = currentAlpha;
 
       // Glow effect for magical fireflies
@@ -85,9 +91,13 @@ export function initParticles(canvasId) {
 
   function animate() {
     ctx.clearRect(0, 0, width, height);
-    particles.forEach((p) => {
+    const ramp = Math.min(1, RAMP_START + (performance.now() - loadTime) / RAMP_TIME_MS);
+    particles.forEach((p, i) => {
+      const threshold = i / particleCount;
+      if (ramp < threshold) return;
+      const fade = Math.min(1, (ramp - threshold) * RAMP_FADE);
       p.update();
-      p.draw();
+      p.draw(fade);
     });
     requestAnimationFrame(animate);
   }

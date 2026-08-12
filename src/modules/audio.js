@@ -1,50 +1,66 @@
 import { CONFIG } from '../config.js';
 
-// MP3 playback only — no synth fallback. If the MP3 is missing or broken,
-// we play nothing and surface a small status message. Autoplay-blocking is
-// handled by retrying the MP3 on the next user gesture.
+// MP3 playlist playback only — no synth fallback. Tracks play in order and
+// then loop back to the first. Autoplay-blocking is handled by retrying the
+// current MP3 on the next user gesture.
 let isPlaying = false;
-let audioElement = null;
-let mp3Ready = false;
-let mp3Failed = false;
+let audioElements = [];
+let mp3Ready = [];
+let mp3Failed = [];
+let currentIndex = 0;
 
 export function initAudio() {
   const musicBar = document.getElementById('music-player-bar');
   const playBtn = document.getElementById('music-play-btn');
   const playIcon = document.getElementById('music-play-icon');
   const statusText = document.getElementById('music-status-text');
+  const trackNameEl = document.getElementById('music-track-name');
 
-  const MP3_SRC   = CONFIG.musicFile   || '';
-  const TRACK_STR = CONFIG.musicTrack  || 'Birthday Song 🎶';
+  const playlist =
+    (Array.isArray(CONFIG.musicPlaylist) && CONFIG.musicPlaylist.length)
+      ? CONFIG.musicPlaylist
+      : [{ file: CONFIG.musicFile || '', track: CONFIG.musicTrack || 'Birthday Song 🎶' }];
 
-  // Load the provided MP3 from /public (served at root on GitHub Pages / Vite)
-  if (MP3_SRC) {
-    try {
-      audioElement = new Audio(MP3_SRC);
-      audioElement.loop = true;
-      audioElement.volume = 0.5;
-      audioElement.preload = 'auto';
-      audioElement.addEventListener('canplay', () => { mp3Ready = true; });
-      audioElement.addEventListener('error', () => { mp3Failed = true; });
-      audioElement.load();
-    } catch (e) {
-      audioElement = null;
-    }
+  playlist.forEach((entry) => {
+    const idx = audioElements.length;
+    mp3Ready.push(false);
+    mp3Failed.push(false);
+
+    const el = new Audio(entry.file);
+    el.loop = false;
+    el.volume = 0.5;
+    el.preload = 'auto';
+    el.addEventListener('canplay', () => { mp3Ready[idx] = true; });
+    el.addEventListener('error', () => { mp3Failed[idx] = true; });
+    el.addEventListener('ended', () => { nextTrack(); });
+    el.load();
+    audioElements.push(el);
+  });
+
+  function currentLabel() {
+    return (playlist[currentIndex] && playlist[currentIndex].track) || 'Birthday Song 🎶';
   }
 
   function setUI(playing, label) {
     if (musicBar) musicBar.classList.toggle('playing', playing);
     if (playIcon) playIcon.textContent = playing ? '⏸' : '▶';
+    if (trackNameEl) trackNameEl.textContent = currentLabel();
     if (statusText) {
       statusText.textContent = !playing
         ? 'Paused'
-        : (label || `Playing ${TRACK_STR}`);
+        : (label || `Playing ${currentLabel()}`);
     }
   }
 
-  function startMp3() {
-    if (!audioElement) return;
-    const p = audioElement.play();
+  function startMp3At(idx) {
+    const el = audioElements[idx];
+    if (!el) return;
+
+    audioElements.forEach((a, i) => {
+      if (i !== idx && a && !a.paused) a.pause();
+    });
+
+    const p = el.play();
 
     // Very old browsers may not return a promise
     if (!p || typeof p.then !== 'function') {
@@ -57,10 +73,10 @@ export function initAudio() {
       isPlaying = true;
       setUI(true);
     }).catch(() => {
-      if (mp3Failed) {
-        // The MP3 file is genuinely broken/missing — play nothing.
+      if (mp3Failed[idx]) {
+        // This MP3 is genuinely broken/missing — move on to the next.
         isPlaying = false;
-        setUI(false, 'Music file unavailable');
+        nextTrack();
       } else {
         // Autoplay was blocked by the browser. Stay paused so the next
         // user gesture retries the MP3.
@@ -70,12 +86,20 @@ export function initAudio() {
     });
   }
 
+  function nextTrack() {
+    if (!audioElements.length) return;
+    currentIndex = (currentIndex + 1) % audioElements.length;
+    if (isPlaying) {
+      startMp3At(currentIndex);
+    }
+  }
+
   window.startAudioPlayback = function() {
     if (isPlaying) return;
 
-    if (audioElement && !mp3Failed) {
-      startMp3();
-    } else if (audioElement) {
+    if (audioElements.length && audioElements.some((_, i) => !mp3Failed[i])) {
+      startMp3At(currentIndex);
+    } else if (audioElements.length) {
       isPlaying = false;
       setUI(false, 'Music file unavailable');
     } else {
@@ -88,9 +112,9 @@ export function initAudio() {
     isPlaying = false;
     setUI(false);
 
-    if (audioElement && !audioElement.paused) {
-      audioElement.pause();
-    }
+    audioElements.forEach((el) => {
+      if (el && !el.paused) el.pause();
+    });
   };
 
   function togglePlay() {

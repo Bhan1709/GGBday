@@ -68,7 +68,8 @@ export function initThreeScene(canvasId) {
       driftX: (Math.random() - 0.5) * 0.02,
       driftY: Math.random() * 0.018 + 0.005,
       spinZ: (Math.random() - 0.5) * 0.012,
-      phaseOffset: Math.random() * Math.PI * 2
+      phaseOffset: Math.random() * Math.PI * 2,
+      baseOpacity: mat.opacity
     });
   }
 
@@ -134,6 +135,9 @@ export function initThreeScene(canvasId) {
     scene.add(group);
     flowers.push({
       mesh: group,
+      petalMat,
+      centerMat,
+      baseOpacity: petalMat.opacity,
       driftX: (Math.random() - 0.5) * 0.015,
       driftY: Math.random() * 0.014 + 0.003,
       spinZ: (Math.random() - 0.5) * 0.008,
@@ -165,6 +169,7 @@ export function initThreeScene(canvasId) {
     group.add(rightWing);
     return {
       mesh: group, leftWing, rightWing,
+      baseOpacity: 0.9,
       speedX: (Math.random() - 0.5) * 0.04,
       speedY: Math.random() * 0.03 + 0.008,
       speedZ: (Math.random() - 0.5) * 0.02,
@@ -196,9 +201,16 @@ export function initThreeScene(canvasId) {
   // ─── ANIMATION LOOP ───────────────────────────────────────────────────────────
   const clock = new THREE.Clock();
 
+  // Ramp-up: fewer particles on load, reaching full density over time.
+  const RAMP_START = 0.08;
+  const RAMP_TIME_MS = 8000;
+  const RAMP_FADE = 8;
+  const loadTime = performance.now();
+
   function animate() {
     requestAnimationFrame(animate);
     const t = clock.getElapsedTime();
+    const ramp = Math.min(1, RAMP_START + (performance.now() - loadTime) / RAMP_TIME_MS);
 
     mouse.x += (mouse.targetX - mouse.x) * 0.05;
     mouse.y += (mouse.targetY - mouse.y) * 0.05;
@@ -207,7 +219,16 @@ export function initThreeScene(canvasId) {
     camera.lookAt(scene.position);
 
     // Hearts
-    hearts.forEach((h) => {
+    hearts.forEach((h, i) => {
+      const threshold = i / heartCount;
+      if (ramp >= threshold) {
+        const fade = Math.min(1, (ramp - threshold) * RAMP_FADE);
+        h.mesh.material.opacity = h.baseOpacity * fade;
+        h.mesh.visible = fade > 0.001;
+      } else {
+        h.mesh.visible = false;
+      }
+      if (!h.mesh.visible) return;
       h.mesh.position.y += h.driftY;
       h.mesh.position.x += h.driftX + Math.sin(t * 0.6 + h.phaseOffset) * 0.008;
       h.mesh.rotation.z += h.spinZ;
@@ -217,7 +238,17 @@ export function initThreeScene(canvasId) {
     });
 
     // Flowers
-    flowers.forEach((f) => {
+    flowers.forEach((f, i) => {
+      const threshold = i / flowerCount;
+      if (ramp >= threshold) {
+        const fade = Math.min(1, (ramp - threshold) * RAMP_FADE);
+        f.petalMat.opacity = f.baseOpacity * fade;
+        f.centerMat.opacity = 0.9 * fade;
+        f.mesh.visible = fade > 0.001;
+      } else {
+        f.mesh.visible = false;
+      }
+      if (!f.mesh.visible) return;
       f.mesh.position.y += f.driftY;
       f.mesh.position.x += f.driftX + Math.cos(t * 0.5 + f.phaseOffset) * 0.006;
       f.mesh.rotation.z += f.spinZ;
@@ -227,7 +258,17 @@ export function initThreeScene(canvasId) {
     });
 
     // Butterflies
-    butterflies.forEach((b) => {
+    butterflies.forEach((b, i) => {
+      const threshold = i / butterflies.length;
+      if (ramp >= threshold) {
+        const fade = Math.min(1, (ramp - threshold) * RAMP_FADE);
+        b.leftWing.material.opacity = b.baseOpacity * fade;
+        b.rightWing.material.opacity = b.baseOpacity * fade;
+        b.mesh.visible = fade > 0.001;
+      } else {
+        b.mesh.visible = false;
+      }
+      if (!b.mesh.visible) return;
       b.wingAngle += b.wingSpeed;
       const flap = Math.sin(b.wingAngle) * 0.7;
       b.leftWing.rotation.y = flap;

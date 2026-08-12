@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initLetter(CONFIG.loveLetter);
 
   // 8. Initialize Random Photo Collage
-  initPhotoCollage(CONFIG.photos);
+  initPhotoCollage(CONFIG.photos, CONFIG.messageCard);
 
   // 9. Initialize 12 Birthday Gifts
   initGiftCards(CONFIG);
