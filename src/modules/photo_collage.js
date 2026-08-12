@@ -254,7 +254,8 @@ export function initPhotoCollage(photos, messageCard = null) {
   }
 
   function applyMetrics() {
-    SPACING = Math.min(4.0, Math.max(2.8, W * 0.0048));
+    const spacingMul = MOBILE_FACTOR > 1 ? 1.3 : 1;
+    SPACING = Math.min(4.0, Math.max(2.8, W * 0.0048 * spacingMul));
     Z_STEP = SPACING * 0.74;
     camera.aspect = W / H;
     camera.position.z = fitZ();
@@ -398,17 +399,17 @@ export function initPhotoCollage(photos, messageCard = null) {
     for (const item of items) {
       const off = wrapOffset(item.index - current);
       const abs = Math.abs(off);
-      const visible = abs <= MAX_OFF + 1;
+      const visible = abs <= MAX_OFF;
       item.mesh.visible = visible;
       if (!visible) continue;
 
-      const scale = abs === 0 ? 1.18 : abs === 1 ? 1.0 : 0.82;
+      const scale = abs === 0 ? 1.7 : abs === 1 ? 1.0 : 0.7;
       item.mesh.position.x = off * SPACING;
       item.mesh.position.y = Math.sin(t * 0.7 + item.index * 0.35) * 0.03;
       item.mesh.position.z = -abs * Z_STEP + Math.sin(t * 0.9 + item.index) * 0.05;
       item.mesh.rotation.y = -off * ANGLE;
       item.mesh.scale.setScalar(scale);
-      item.mesh.material.opacity = abs <= 1 ? 1 : 0.85;
+      item.mesh.material.opacity = abs <= 1 ? 1 : 0.7;
     }
 
     const snapped = Math.round(current) % TOTAL;
