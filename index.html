@@ -264,6 +264,13 @@
           <textarea id="claim-note" class="form-control" placeholder="Write something from your heart..."></textarea>
         </div>
 
+        <div class="form-group">
+          <label for="claim-attachments">Add a Photo or Attachment (Optional) 📎</label>
+          <input type="file" id="claim-attachments" class="form-control" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip,.mp4,.mov" multiple />
+          <p class="form-hint">Attach a photo, video, or document — it will ride along in the email I receive.</p>
+          <div class="attachment-previews" id="claim-attachment-previews"></div>
+        </div>
+
         <button type="submit" class="btn-primary btn-gold" style="width: 100%; margin-top: 0.5rem;">
           Send It With Love 💖
         </button>

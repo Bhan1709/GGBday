@@ -22,6 +22,18 @@ export const CONFIG = {
   claimExpiryDate: "August 13, 2027",
   totalClaimsAllowed: 12,
 
+  // Pre-filled claims (synchronized to every device). These are merged into
+  // localStorage on load — existing claims on a device are never overwritten.
+  seedClaims: [
+    {
+      couponId: 1,
+      itemName: "Shoes🫠",
+      amount: "",
+      note: "Love you 💕 thank you thank you so muchhhh ❤️ for everything, this is the best✨✨✨ I'm super blessed to have you🫂 you are my true blessing bhan and you are my future and my life ❤️ love from your fairy 🧚❤️ I loveeeeeeee thisssss 🥹🥹🥹🥹🥹❤️❤️❤️❤️❤️",
+      date: "Aug 13, 2026"
+    }
+  ],
+
   // Romantic Love Letter for Gagan
   loveLetter: {
     title: "To My Dearest Gagan",
