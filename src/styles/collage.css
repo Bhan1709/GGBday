@@ -153,24 +153,30 @@
   position: absolute;
   top: 1.2rem;
   right: 1.2rem;
-  width: 3rem;
-  height: 3rem;
+  width: 2.8rem;
+  height: 2.8rem;
   border-radius: 50%;
-  border: 1px solid rgba(255, 196, 77, 0.4);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
-  font-size: 1.2rem;
+  border: 1px solid rgba(255, 196, 77, 0.5);
+  background: radial-gradient(ellipse at top, rgba(255, 215, 122, 0.25) 0%, rgba(10, 5, 15, 0.85) 70%);
+  backdrop-filter: blur(10px);
+  color: var(--gold-300);
+  font-size: 2.2rem;
   line-height: 1;
+  font-weight: 400;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all var(--transition-fast);
+  z-index: 10;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 196, 77, 0.2);
 }
 
 .photo-lightbox-close:hover {
-  background: rgba(244, 151, 170, 0.25);
-  transform: rotate(90deg);
+  background: radial-gradient(ellipse at top, rgba(255, 215, 122, 0.35) 0%, rgba(10, 5, 15, 0.9) 70%);
+  border-color: rgba(255, 196, 77, 0.9);
+  transform: scale(1.08);
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.6), 0 0 30px rgba(255, 196, 77, 0.3);
 }
 
 .photo-lightbox-nav {

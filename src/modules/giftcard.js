@@ -19,6 +19,9 @@ export function initGiftCards(config) {
   const claimModal = document.getElementById('claim-modal');
   const claimForm = document.getElementById('claim-form');
   const claimModalClose = document.getElementById('claim-modal-close');
+  const claimDetailModal = document.getElementById('claim-detail-modal');
+  const claimDetailClose = document.getElementById('claim-detail-close');
+  const claimDetailContent = document.getElementById('claim-detail-content');
   const activeCouponTitle = document.getElementById('active-coupon-title');
   const attachmentInput = document.getElementById('claim-attachments');
   const attachmentPreviews = document.getElementById('claim-attachment-previews');
@@ -168,25 +171,82 @@ export function initGiftCards(config) {
     });
   }
 
+  function openClaimDetail(claim) {
+    if (!claimDetailModal || !claimDetailContent) return;
+
+    const attachments = claim.attachments && claim.attachments.length > 0
+      ? claim.attachments.map(a => `<div style="word-break: break-all;">${escapeHtml(a)}</div>`).join('')
+      : 'None';
+
+    claimDetailContent.innerHTML = `
+      <div class="claim-detail-item">
+        <span class="claim-detail-label">Surprise #</span>
+        <span class="claim-detail-value">${claim.couponId}</span>
+      </div>
+      <div class="claim-detail-item">
+        <span class="claim-detail-label">What I Wanted</span>
+        <span class="claim-detail-value">${escapeHtml(claim.itemName)}</span>
+      </div>
+      ${claim.amount ? `
+      <div class="claim-detail-item">
+        <span class="claim-detail-label">Amount</span>
+        <span class="claim-detail-value">₹${escapeHtml(claim.amount)}</span>
+      </div>` : ''}
+      <div class="claim-detail-item">
+        <span class="claim-detail-label">Date</span>
+        <span class="claim-detail-value">${escapeHtml(claim.date)}</span>
+      </div>
+      ${claim.note ? `
+      <div class="claim-detail-item">
+        <span class="claim-detail-label">Note</span>
+        <span class="claim-detail-value">${escapeHtml(claim.note)}</span>
+      </div>` : ''}
+      <div class="claim-detail-item">
+        <span class="claim-detail-label">Attachments</span>
+        <span class="claim-detail-value">${attachments}</span>
+      </div>
+    `;
+
+    const modalBox = claimDetailModal.querySelector('.claim-modal-box');
+    if (modalBox) modalBox.scrollTop = 0;
+    claimDetailModal.classList.add('active');
+  }
+
+  function closeClaimDetail() {
+    if (claimDetailModal) claimDetailModal.classList.remove('active');
+  }
+
+  if (claimDetailClose) {
+    claimDetailClose.addEventListener('click', closeClaimDetail);
+  }
+
+  if (claimDetailModal) {
+    claimDetailModal.addEventListener('click', (e) => {
+      if (e.target === claimDetailModal) closeClaimDetail();
+    });
+  }
+
   function fillRow(row, index) {
     const claim = claims[index];
 
     if (claim) {
       row.classList.add('claimed');
-      const attachMeta = claim.attachments && claim.attachments.length
-        ? (claim.attachments.length === 1 ? `📎 ${claim.attachments[0]}` : `📎 ${claim.attachments.length} attachments`)
-        : '';
-      const meta = [claim.amount ? `₹${escapeHtml(claim.amount)}` : '', escapeHtml(claim.date), claim.note ? `“${escapeHtml(claim.note)}”` : '', escapeHtml(attachMeta)]
-        .filter(Boolean)
-        .join(' · ');
+      const title = claim.itemName.length > 50 ? claim.itemName.substring(0, 50) + '...' : claim.itemName;
+      const amountPart = claim.amount ? `₹${escapeHtml(claim.amount)}` : '';
+      const metaParts = [amountPart, escapeHtml(claim.date)].filter(Boolean);
+      const meta = metaParts.join(' · ');
       row.innerHTML = `
         <span class="claim-row-num">#${index}</span>
         <div class="claim-row-info">
-          <div class="claim-row-title">${escapeHtml(claim.itemName)}</div>
-          <div class="claim-row-meta">${meta}</div>
+          <div class="claim-row-title" title="${escapeHtml(claim.itemName)}">${escapeHtml(title)}</div>
+          ${meta ? `<div class="claim-row-meta">${meta}</div>` : ''}
         </div>
         <span class="claim-row-status claimed">✓ Unwrapped</span>
       `;
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', (e) => {
+        openClaimDetail(claim);
+      });
     } else {
       row.innerHTML = `
         <span class="claim-row-num">#${index}</span>
@@ -196,6 +256,7 @@ export function initGiftCards(config) {
         </div>
         <span class="claim-row-status available">🎁 Available</span>
       `;
+      row.onclick = null;
     }
   }
 
@@ -271,14 +332,33 @@ export function initGiftCards(config) {
     if (activeCouponTitle) {
       activeCouponTitle.textContent = `Unwrap Surprise #${activeCouponId}`;
     }
-    if (claimModal) claimModal.classList.add('active');
+    const modalBox = claimModal?.querySelector('.claim-modal-box');
+    if (modalBox) {
+      // Force reset scroll
+      modalBox.scrollTop = 0;
+    }
+    if (claimModal) {
+      claimModal.classList.add('active');
+      // Ensure scroll works after opening
+      setTimeout(() => {
+        if (modalBox) modalBox.scrollTop = 0;
+      }, 10);
+    }
     if (claimScene) claimScene.setActive(true);
   }
 
   function closeClaimModal() {
     if (claimModal) claimModal.classList.remove('active');
     if (claimScene) claimScene.setActive(false);
-    if (claimForm) claimForm.reset();
+    if (claimForm) {
+      claimForm.reset();
+      const existingErrors = claimForm.querySelectorAll('.form-error');
+      existingErrors.forEach(err => err.remove());
+      const itemInput = document.getElementById('claim-item-name');
+      const amountInput = document.getElementById('claim-amount');
+      if (itemInput) itemInput.style.borderColor = '';
+      if (amountInput) amountInput.style.borderColor = '';
+    }
     selectedFiles = [];
     if (attachmentPreviews) attachmentPreviews.innerHTML = '';
     activeCouponId = null;
@@ -294,6 +374,16 @@ export function initGiftCards(config) {
     });
   }
 
+  // Ensure modal scroll resets properly
+  if (claimModal) {
+    claimModal.addEventListener('transitionend', (e) => {
+      const modalBox = claimModal.querySelector('.claim-modal-box');
+      if (modalBox) {
+        modalBox.scrollTop = 0;
+      }
+    });
+  }
+
   // ─── Handle Claim Submission ──────────────────────────────────────────────
   if (claimForm) {
     claimForm.addEventListener('submit', async (e) => {
@@ -305,8 +395,26 @@ export function initGiftCards(config) {
       const amount = document.getElementById('claim-amount').value.trim();
       const note = document.getElementById('claim-note').value.trim();
 
+      // Remove any existing error messages
+      const existingErrors = claimForm.querySelectorAll('.form-error');
+      existingErrors.forEach(err => err.remove());
+
+      // Clear error from inputs
+      document.getElementById('claim-item-name').style.borderColor = '';
+      document.getElementById('claim-amount').style.borderColor = '';
+
       // A gift, direct money, or both — just need at least one.
-      if (!itemName && !amount) return;
+      if (!itemName && !amount) {
+        const amountGroup = document.getElementById('claim-amount').closest('.form-group');
+        const errorDiv = document.createElement('p');
+        errorDiv.className = 'form-error';
+        errorDiv.textContent = 'Please tell me what you want or enter an amount 💌';
+        amountGroup.appendChild(errorDiv);
+        document.getElementById('claim-item-name').style.borderColor = '#ff8a8a';
+        document.getElementById('claim-amount').style.borderColor = '#ff8a8a';
+        amountGroup.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return;
+      }
 
       const giftName = itemName || 'Pocket money surprise 💸';
 

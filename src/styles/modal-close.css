@@ -1,0 +1,40 @@
+/* ─── Modern Close Buttons ─────────────────────────────────────────── */
+.lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: radial-gradient(ellipse at top, rgba(255, 215, 122, 0.25) 0%, rgba(10, 5, 15, 0.8) 70%);
+  border: 1px solid rgba(255, 196, 77, 0.5);
+  color: var(--gold-300);
+  font-size: 1.8rem;
+  line-height: 1;
+  font-weight: 400;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-fast);
+  z-index: 5;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 196, 77, 0.15);
+  backdrop-filter: blur(8px);
+}
+
+.lightbox-close:hover {
+  background: radial-gradient(ellipse at top, rgba(255, 215, 122, 0.35) 0%, rgba(10, 5, 15, 0.9) 70%);
+  border-color: rgba(255, 196, 77, 0.9);
+  transform: scale(1.08);
+  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 196, 77, 0.25);
+}
+
+@media (max-width: 640px) {
+  .lightbox-close {
+    width: 2.2rem;
+    height: 2.2rem;
+    font-size: 1.6rem;
+    top: 0.8rem;
+    right: 0.8rem;
+  }
+}

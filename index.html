@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="src/styles/letter.css" />
   <link rel="stylesheet" href="src/styles/collage.css" />
   <link rel="stylesheet" href="src/styles/giftcard.css" />
+  <link rel="stylesheet" href="src/styles/modal-close.css" />
   <link rel="stylesheet" href="src/styles/music.css" />
 
   <!-- Three.js 3D Engine & Canvas Confetti CDN Scripts -->
@@ -238,7 +239,7 @@
   <div class="claim-modal" id="claim-modal">
     <div class="claim-modal-box">
       <canvas id="claim-three-canvas"></canvas>
-      <button class="lightbox-close" id="claim-modal-close">✕</button>
+      <button class="lightbox-close" id="claim-modal-close" aria-label="Close">×</button>
       <h3 id="active-coupon-title" class="section-title" style="font-size: 1.8rem; text-align: center;">
         Your Wish, My Command
       </h3>
@@ -278,9 +279,20 @@
     </div>
   </div>
 
+  <!-- Claim Detail Modal -->
+  <div class="claim-modal" id="claim-detail-modal">
+    <div class="claim-modal-box claim-detail-box">
+      <button class="lightbox-close" id="claim-detail-close" aria-label="Close">×</button>
+      <h3 class="section-title" style="font-size: 1.6rem; text-align: center; margin-bottom: 1rem;">
+        Unwrapped Surprise 💖
+      </h3>
+      <div id="claim-detail-content" class="claim-detail-content"></div>
+    </div>
+  </div>
+
   <!-- Photo Lightbox (click to enlarge) -->
   <div class="photo-lightbox" id="photo-lightbox" aria-hidden="true">
-    <button class="photo-lightbox-close" id="photo-lightbox-close" aria-label="Close">✕</button>
+    <button class="photo-lightbox-close" id="photo-lightbox-close" aria-label="Close">×</button>
     <button class="photo-lightbox-nav prev" id="photo-lightbox-prev" aria-label="Previous memory">←</button>
     <img id="photo-lightbox-img" alt="Memory" />
     <button class="photo-lightbox-nav next" id="photo-lightbox-next" aria-label="Next memory">→</button>
