@@ -341,10 +341,13 @@
   border-radius: var(--radius-md);
   max-width: 520px;
   width: 100%;
+  max-height: calc(100vh - 3rem);
   padding: 2.5rem 2rem;
   box-shadow: var(--shadow-card), var(--shadow-gold);
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Three.js animated backdrop inside the form modal */
@@ -355,6 +358,7 @@
   height: 100%;
   pointer-events: none;
   z-index: 0;
+  display: block;
 }
 
 .claim-modal-box > *:not(canvas) {
@@ -504,6 +508,7 @@ input.form-control[type="file"]::file-selector-button {
 
   .gift-main-card {
     padding: 1.6rem 1.4rem 1.5rem;
+    width: 100%;
   }
 
   .gift-card-progress {
@@ -520,10 +525,33 @@ input.form-control[type="file"]::file-selector-button {
     align-items: stretch;
     text-align: center;
   }
+
+  .claim-modal {
+    padding: 0.75rem;
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+
+  .claim-modal-box {
+    max-height: none;
+    height: auto;
+    margin: 1.5rem 0;
+    padding: 2rem 1.25rem 1.75rem;
+    border-radius: var(--radius-md);
+  }
 }
 
 /* ─── Mobile Typography Boost ─────────────────────────────────────────────── */
 @media (max-width: 768px) {
+  .giftcard-section {
+    padding: 2.5rem 0.75rem;
+    overflow-x: hidden;
+  }
+
+  .gift-main-card {
+    width: min(620px, 96%);
+  }
+
   .gift-card-brand { font-size: 1.2rem; }
   .gift-stat-label { font-size: 0.95rem; letter-spacing: 0.12em; }
   .gift-card-expiry { font-size: 0.9rem; }
